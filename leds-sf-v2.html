@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LEDS – Infográfico Responsivo</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://i.ibb.co/N2Dc3q53/logo.png">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;900&family=Segoe+UI:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        :root {
+            --text-color: white;
+            --bg-gradient: linear-gradient(60deg, rgba(23, 13, 194, 1) 0%, rgba(41, 41, 237, 1) 50%, rgba(0, 212, 255, 1) 100%);
+            --header-bg: rgba(0, 0, 0, 0.65);
+            --section-bg: rgba(255, 255, 255, 0.1);
+            --section-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            --button-bg: rgba(255, 255, 255, 0.2);
+            --button-bg-hover: rgba(255, 255, 255, 0.35);
+            --button-bg-active: rgba(255, 255, 255, 0.6);
+            --button-radius: 10px;
+            --section-radius: 20px;
+            --widget-bg: rgba(255, 255, 255, 0.1);
+            --widget-bg-hover: rgba(255, 255, 255, 0.2);
+            --widget-radius: 8px;
+
+            --font-primary: 'Segoe UI', sans-serif;
+            --font-display: 'Rubik', sans-serif;
+
+            --header-height: 70px;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            padding-top: var(--header-height);
+            text-align: center;
+            background-image: var(--bg-gradient);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--header-bg);
+            padding: 15px 20px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: var(--header-height);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        #relogio {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            right: 20px;
+            font-size: 1.4rem;
+            font-family: var(--font-display);
+            background-color: var(--widget-bg);
+            padding: 6px 12px;
+            border-radius: var(--widget-radius);
+            color: var(--text-color);
+        }
+
+        main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 20px;
+            gap: 30px;
+        }
+
+        section {
+            background-color: var(--section-bg);
+            border-radius: var(--section-radius);
+            padding: 30px;
+            max-width: 900px;
+            width: 95%;
+            box-shadow: var(--section-shadow);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .subtitulo {
+            font-size: 1.6rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .numero-co2, .numero-co2s {
+            font-family: var(--font-display);
+            font-size: 3.5rem;
+            color: var(--text-color);
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
+            margin: 15px 0;
+            display: inline-block;
+            line-height: 1.1;
+            font-weight: 900;
+        }
+
+        .numero-co2s {
+            font-size: 2.5rem;
+        }
+
+        .descricao {
+            font-size: 1.3rem;
+            margin-top: 0;
+            margin-bottom: 10px;
+            min-height: 1.5em;
+        }
+
+        .legenda {
+            font-size: 1rem;
+            opacity: 0.85;
+            margin-top: 15px;
+        }
+
+        .botoes {
+            margin-top: 25px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .botao {
+            background: var(--button-bg);
+            color: var(--text-color);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 10px 18px;
+            font-size: 0.95rem;
+            border-radius: var(--button-radius);
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.2s;
+            font-family: var(--font-primary);
+        }
+
+        .botao:hover {
+            background: var(--button-bg-hover);
+            transform: scale(1.05);
+        }
+
+        .botao.ativo {
+            background: var(--button-bg-active);
+            color: #1a1a1a;
+            font-weight: 700;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Year Selector */
+        .year-selector-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .year-selector-label {
+            font-size: 1.1rem;
+            color: var(--text-color);
+            opacity: 0.9;
+        }
+
+        .year-selector {
+            position: relative;
+            min-width: 120px;
+            background-color: var(--button-bg);
+            color: var(--text-color);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--button-radius);
+            padding: 10px 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .year-selector:hover, .year-selector:focus-within {
+            background-color: var(--button-bg-hover);
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .selected-year {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+        }
+
+        .dropdown-arrow {
+            width: 18px;
+            height: 18px;
+            transition: transform 0.3s ease;
+            stroke: var(--text-color);
+        }
+
+        .year-selector.open .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        .year-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            width: 100%;
+            background-color: rgba(0,0,0,0.8);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: var(--button-radius);
+            max-height: 0;
+            overflow-y: auto;
+            z-index: 10;
+            opacity: 0;
+            transform: translateY(10px) scaleY(0.95);
+            transform-origin: top center;
+            transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out, transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            padding: 5px 0;
+        }
+
+        .year-dropdown::-webkit-scrollbar {
+            width: 8px;
+        }
+        .year-dropdown::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+        .year-dropdown::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+            transition: background 0.2s ease;
+        }
+        .year-dropdown::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.5);
+        }
+
+        .year-selector.open .year-dropdown {
+            max-height: 200px;
+            opacity: 1;
+            transform: translateY(0) scaleY(1);
+        }
+
+        .year-dropdown div {
+            padding: 10px 15px;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+            font-size: 0.95rem;
+        }
+
+        .year-dropdown div:hover {
+            background-color: var(--button-bg-hover);
+            transform: translateX(3px);
+        }
+        .year-dropdown div.selected-item {
+            background-color: var(--button-bg-active);
+            color: #1a1a1a;
+            font-weight: bold;
+        }
+
+        /* Logo Styles */
+        .logo-container {
+            position: fixed;
+            top: calc(var(--header-height) + 15px);
+            right: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+            z-index: 100;
+        }
+        .logo-container-lefty {
+            position: fixed;
+            top: calc(var(--header-height) + 15px);
+            left: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .logo-img {
+            display: block;
+            backdrop-filter: blur(6px);
+            border-radius: var(--widget-radius);
+            padding: 8px;
+            background-color: rgba(255, 255, 255, 0.65);
+            max-width: 100%;
+            object-fit: contain;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .logoObs { width: 300px; height: auto; }
+        .logoCop { width: 300px; height: auto; }
+        .logoNew { width: 400px; height: auto; }
+
+        /* Agro Input Styles */
+        .agro-input-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .agro-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .agro-input-group label {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: white;
+        }
+
+        .agro-input {
+            background-color: rgba(0, 0, 0, 0.4);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: var(--button-radius);
+            padding: 12px 15px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .agro-input:focus {
+            background-color: rgba(0, 0, 0, 0.6);
+            border-color: rgba(255, 255, 255, 0.7);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+        }
+
+        .agro-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .agro-result {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            min-height: 1.5em;
+        }
+
+        /* Map Styles */
+        .map-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            border-radius: var(--section-radius);
+            overflow: hidden;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        #agroMap {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .map-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            font-size: 0.9rem;
+            text-align: center;
+            z-index: 1000;
+        }
+
+        .map-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 1000;
+        }
+
+        .map-controls label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        /* Chart Styles - Centralizados */
+        .charts-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .chart-wrapper {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--section-radius);
+            padding: 15px;
+            backdrop-filter: blur(5px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .chart-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        canvas {
+            max-width: 100%;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            header { font-size: 1.5rem; padding: 12px 15px; }
+            #relogio { font-size: 1.2rem; right: 15px; padding: 5px 10px; }
+            .numero-co2 { font-size: 3rem; }
+            .numero-co2s { font-size: 2.2rem; }
+            .descricao { font-size: 1.2rem; }
+            .subtitulo { font-size: 1.4rem; gap: 8px; }
+            section { padding: 25px; }
+            .logo-container, .logo-container-lefty { top: calc(var(--header-height) + 10px); transform: none; gap: 5px; }
+            .logo-container { right: 10px; }
+            .logo-container-lefty { left: 10px; }
+            .logoObs, .logoCop, .logoNew { width: 130px; }
+            .map-container { height: 400px; }
+            .charts-container { flex-direction: column; }
+        }
+
+        @media (max-width: 480px) {
+            body { padding-top: 60px; }
+            header { font-size: 1.2rem; justify-content: flex-start; padding-left: 15px; min-height: 60px; }
+            .header-content{ margin-right: 70px; }
+            #relogio { font-size: 1rem; top: 50%; transform: translateY(-50%); right: 10px; padding: 4px 8px; }
+            main { padding: 20px 10px; }
+            section { padding: 20px 15px; width: 100%; }
+            .numero-co2 { font-size: 2.5rem; }
+            .numero-co2s { font-size: 1.8rem; }
+            .descricao { font-size: 1.1rem; }
+            .subtitulo { font-size: 1.2rem; flex-direction: column; gap: 5px; }
+            .legenda { font-size: 0.9rem; }
+            .botao { padding: 8px 15px; font-size: 0.9rem; }
+            .logo-container, .logo-container-lefty { position: static; transform: none; flex-direction: row; justify-content: center; width: 100%; margin-bottom: 15px; padding: 0 10px; }
+            .logoObs, .logoCop, .logoNew { width: 70px; padding: 5px; }
+            .logo-container > .logo-img, .logo-container-lefty > .logo-img { margin: 0 5px; }
+            .map-container { height: 300px; }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <span class="header-content">LEDS – Infográfico Responsivo</span>
+        <div id="relogio">--:--</div>
+    </header>
+
+    <div class="logo-container">
+        <img class="logo-img logoNew" src="https://i.ibb.co/NGHmfxp/logo100anos.png" alt="Logo Marista Santa Maria 100 anos">
+    </div>
+    <div class="logo-container-lefty">
+        <img class="logo-img logoCop" src="https://i.ibb.co/xbfmWBy/Logo-COP-fundo-transparente.png" alt="Logo COP Colégio Marista Santa Maria">
+        <img class="logo-img logoObs" src="https://i.ibb.co/HfxV4y9b/Logo-Observat-rio-fundo-transparente.png" alt="Logo Observatório Marista">
+    </div>
+
+    <main>
+        <!-- Seções originais mantidas -->
+        <section>
+            <div class="subtitulo" id="tituloPagina">🌍 Emissões Globais de CO₂ em Tempo Real</div>
+            <div class="numero-co2" id="co2Numero" aria-live="polite">...</div>
+            <div class="descricao" id="co2Descricao">toneladas emitidas até agora em 2025</div>
+            <div class="legenda" id="co2Legenda">Estimativa para 2025: 37,4 bilhões de toneladas</div>
+            <div class="botoes" id="botoesRegiao">
+                <button class="botao" id="btnMundo" data-pagina="mundo">Mundo</button>
+                <button class="botao" id="btnBrasil" data-pagina="brasil">Brasil</button>
+                <button class="botao" id="btnParana" data-pagina="parana">Paraná</button>
+                <button class="botao" id="btnCuritiba" data-pagina="curitiba">Curitiba</button>
+            </div>
+        </section>
+
+        <section>
+            <div class="subtitulo" id="tituloPagina2">🌍 Emissões Globais de CO₂ desde a criação do Marista</div>
+            <div class="numero-co2s" id="co2Numero2" aria-live="polite">...</div>
+            <div class="descricao" id="co2Descricao2">toneladas emitidas desde a criação do Marista</div>
+            <div class="botoes" id="botoesHistorico">
+                <button class="botao" id="btnMarista" data-pagina2="Marista">Marista</button>
+                <button class="botao" id="btnSanta" data-pagina2="Santa">Santa Maria</button>
+            </div>
+        </section>
+
+        <section>
+            <div class="subtitulo" id="tituloPagina3">📅 Emissões Globais de CO₂ Desde um Ano Específico</div>
+            <div class="year-selector-container">
+                <span class="year-selector-label">Ano:</span>
+                <div class="year-selector" id="yearSelector" tabindex="0">
+                    <span class="selected-year" id="selectedYearDisplay">1990</span>
+                    <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 10L12 15L17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <div class="year-dropdown" id="yearDropdownList">
+                        <!-- Years will be populated by JavaScript -->
+                    </div>
+                </div>
+                <button class="botao" id="btnCalcularAno" style="margin-left: 15px;">Calcular</button>
+            </div>
+            <div class="numero-co2" id="co2Numero3" aria-live="polite" style="font-size: 2.8rem;">...</div>
+            <div class="descricao" id="co2Descricao3">...</div>
+            <p id="erroAno" style="color: #ffdddd; font-weight: bold; min-height: 1.2em; margin-top:10px;"></p>
+        </section>
+
+        <!-- Nova seção: Calculadora de Emissões do Agronegócio -->
+        <section>
+            <div class="subtitulo">🌱 Calculadora de Emissões do Agronegócio</div>
+            <div class="agro-input-container">
+                <div class="agro-input-group">
+                    <label for="agro-activity">Atividade:</label>
+                    <select id="agro-activity" class="agro-input">
+                        <option value="soja">Soja</option>
+                        <option value="milho">Milho</option>
+                        <option value="cana">Cana-de-açúcar</option>
+                        <option value="pecuaria">Pecuária (gado de corte)</option>
+                    </select>
+                </div>
+                <div class="agro-input-group">
+                    <label for="agro-area">Área (hectares):</label>
+                    <input type="number" id="agro-area" class="agro-input" placeholder="Ex: 1000" min="0">
+                </div>
+                <div class="agro-input-group">
+                    <label for="agro-cattle">Número de cabeças (apenas para pecuária):</label>
+                    <input type="number" id="agro-cattle" class="agro-input" placeholder="Ex: 500" min="0" disabled>
+                </div>
+            </div>
+            <button class="botao" id="btnCalcularAgro">Calcular Emissões</button>
+            <div class="agro-result" id="agroResult"></div>
+            <div class="legenda">Baseado em dados do SEEG (Sistema de Estimativas de Emissões de Gases de Efeito Estufa) e EMBRAPA</div>
+        </section>
+
+        <!-- Nova seção: Mapas Interativos -->
+        <section>
+            <div class="subtitulo">🗺️ Mapas Interativos de Desmatamento e Agricultura</div>
+            <p>Visualize as áreas mais afetadas pelo desmatamento e as regiões de alta atividade agrícola no Brasil</p>
+            
+            <div class="map-container">
+                <div id="agroMap"></div>
+                <div class="map-controls">
+                    <label><input type="checkbox" id="showDeforestation" checked> Desmatamento</label>
+                    <label><input type="checkbox" id="showAgriculture" checked> Áreas Agrícolas</label>
+                </div>
+                <div class="map-overlay">Dados: TerraBrasilis (INPE) e IBGE - Baseado em dados reais de 2022</div>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <a href="https://terrabrasilis.dpi.inpe.br/app/map/deforestation" target="_blank" class="botao" style="text-decoration: none; display: inline-block;">
+                    Abrir Mapa de Desmatamento - TerraBrasilis
+                </a>
+                <a href="https://infoamazonia.org/2023/03/21/desmatamento-na-amazonia-passado-presente-e-futuro/" target="_blank" class="botao" style="text-decoration: none; display: inline-block; margin-left: 10px;">
+                    Ver Análise do Desmatamento na Amazônia
+                </a>
+            </div>
+        </section>
+
+        <!-- Nova seção: Gráficos Comparativos -->
+        <section>
+            <div class="subtitulo">📊 Análise Comparativa do Agronegócio</div>
+            
+            <div class="charts-container">
+                <div class="chart-wrapper">
+                    <div class="chart-title">Emissões por Cultura (tCO₂eq/ha/ano)</div>
+                    <div class="chart-container">
+                        <canvas id="emissionsChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-wrapper">
+                    <div class="chart-title">Área Cultivada no Brasil (milhões de ha)</div>
+                    <div class="chart-container">
+                        <canvas id="areaChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="charts-container">
+                <div class="chart-wrapper">
+                    <div class="chart-title">Emissões do Agronegócio por Tipo (2022)</div>
+                    <div class="chart-container">
+                        <canvas id="sectorChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-wrapper">
+                    <div class="chart-title">Comparação Agronegócio vs Agricultura Familiar</div>
+                    <div class="chart-container">
+                        <canvas id="comparisonChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="legenda">Fontes: SEEG, EMBRAPA, IBGE e CONAB - Dados de 2022</div>
+        </section>
+    </main>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        "use strict";
+
+        // Dados de emissões do agronegócio atualizados com base em https://indicadores.agro.gov.br/
+        const agroEmissions = {
+            soja: 0.85,       // tCO2eq por hectare por ano (SEEG/EMBRAPA)
+            milho: 0.72,      // tCO2eq por hectare por ano (SEEG/EMBRAPA)
+            cana: 0.45,       // tCO2eq por hectare por ano (SEEG - considerando queima)
+            pecuaria: 56.2    // tCO2eq por cabeça por ano (SEEG - gado de corte)
+        };
+
+        // Dados históricos de emissões de CO2 (mantido do código original)
+        const co2EmissionsByYear = {
+            "2010": 33.35590344, "2011": 34.50453812, "2012": 35.00002034, "2013": 35.30165585, "2014": 35.45009475, "2015": 35.40489697, "2016": 35.41665608, "2017": 35.98989788, "2018": 36.73042656, "2019": 37.10427786, "2020": 35.12652612, "2021": 36.99173628, "2022": 37.29383639, "2023": 37.79156871
+        };
+
+        // Estimate for 2024 annual emissions (in tonnes)
+        const EMISSIONS_2024_ANNUAL = 37.9e9;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM Content Loaded. Script starting.");
+
+            // Dados de emissões por região
+            const emissoes = {
+                mundo: { anual: 37.4e9, titulo: "🌍 Emissões Globais de CO₂", legenda: "Estimativa para 2025: 37,4 bilhões de toneladas" },
+                brasil: { anual: 1.3e9, titulo: "🇧🇷 Emissões de CO₂ do Brasil", legenda: "Estimativa para 2025: 1,3 bilhão de toneladas" },
+                parana: { anual: 62.5e6, titulo: "🏞️ Emissões de CO₂ do Paraná", legenda: "Estimativa para 2025: 62,5 milhões de toneladas" },
+                curitiba: { anual: 8.1e6, titulo: "🏙️ Emissões de CO₂ de Curitiba", legenda: "Estimativa para 2025: 8,1 milhões de toneladas" }
+            };
+
+            const emissoesHistorico = {
+                Marista: { titulo: "🌍 Emissões Globais de CO₂ desde a criação do Marista (1817)", baseAte2025: 1848365645658.47, global2025: 37.4e9 },
+                Santa: { titulo: "🌍 Emissões Globais de CO₂ desde a criação do Santa Maria (1925)", baseAte2025: 1732301526553.08, global2025: 37.4e9 }
+            };
+
+            // Variáveis de estado
+            let paginaAtualRegiao = "mundo";
+            let paginaAtualHistorico = "Marista";
+            let intervaloTroca1 = null;
+            let intervaloTroca2 = null;
+            let customStartYear = 1990;
+            let fixedEmissionsSumForCustomYear = 0;
+
+            // Elementos DOM
+            const co2NumeroElement = document.getElementById("co2Numero");
+            const co2DescricaoElement = document.getElementById("co2Descricao");
+            const tituloPaginaElement = document.getElementById("tituloPagina");
+            const co2LegendaElement = document.getElementById("co2Legenda");
+            const botoesRegiaoContainer = document.getElementById("botoesRegiao");
+            const botoesRegiao = botoesRegiaoContainer ? botoesRegiaoContainer.querySelectorAll(".botao") : [];
+
+            const co2NumeroElement2 = document.getElementById("co2Numero2");
+            const co2DescricaoElement2 = document.getElementById("co2Descricao2");
+            const tituloPaginaElement2 = document.getElementById("tituloPagina2");
+            const botoesHistoricoContainer = document.getElementById("botoesHistorico");
+            const botoesHistorico = botoesHistoricoContainer ? botoesHistoricoContainer.querySelectorAll(".botao") : [];
+
+            const yearSelectorElement = document.getElementById("yearSelector");
+            const selectedYearDisplayElement = document.getElementById("selectedYearDisplay");
+            const yearDropdownListElement = document.getElementById("yearDropdownList");
+            const btnCalcularAnoElement = document.getElementById("btnCalcularAno");
+            const co2NumeroElement3 = document.getElementById("co2Numero3");
+            const co2DescricaoElement3 = document.getElementById("co2Descricao3");
+            const erroAnoElement = document.getElementById("erroAno");
+
+            const relogioElement = document.getElementById("relogio");
+
+            // Elementos da nova seção de agronegócio
+            const agroActivityElement = document.getElementById("agro-activity");
+            const agroAreaElement = document.getElementById("agro-area");
+            const agroCattleElement = document.getElementById("agro-cattle");
+            const btnCalcularAgroElement = document.getElementById("btnCalcularAgro");
+            const agroResultElement = document.getElementById("agroResult");
+
+            // Elementos do mapa
+            const showDeforestationElement = document.getElementById("showDeforestation");
+            const showAgricultureElement = document.getElementById("showAgriculture");
+
+            // Funções de cálculo e atualização
+            function segundosTotaisNoAno(year) {
+                return (new Date(year + 1, 0, 1) - new Date(year, 0, 1)) / 1000;
+            }
+
+            function segundosDesdeInicioDoAno(year) {
+                const agora = new Date();
+                if (agora.getFullYear() !== year) {
+                    const startOfYear = new Date(agora.getFullYear(), 0, 1);
+                    const secondsElapsed = (agora - startOfYear) / 1000;
+                    const totalSecondsInCurrentActualYear = segundosTotaisNoAno(agora.getFullYear());
+                    if (totalSecondsInCurrentActualYear === 0) return 0;
+                    return Math.floor((secondsElapsed / totalSecondsInCurrentActualYear) * segundosTotaisNoAno(year));
+                }
+                const inicio = new Date(year, 0, 1);
+                return Math.floor((agora - inicio) / 1000);
+            }
+
+            function formatarNumero(numero) {
+                if (isNaN(numero)) {
+                    console.warn("formatarNumero received NaN, returning '...'");
+                    return "...";
+                }
+                return numero.toLocaleString('pt-BR', { maximumFractionDigits: 0, useGrouping: true });
+            }
+
+            function atualizarEmissoesRegiao() {
+                const currentYear = 2025;
+                const segundosAno = segundosTotaisNoAno(currentYear);
+                const segundosPassados = segundosDesdeInicioDoAno(currentYear);
+                const emissaoAnual = emissoes[paginaAtualRegiao].anual;
+
+                if (segundosAno === 0) return;
+
+                const emissaoPorSegundo = emissaoAnual / segundosAno;
+                const emitido = emissaoPorSegundo * segundosPassados;
+
+                if (co2NumeroElement) co2NumeroElement.textContent = formatarNumero(emitido);
+                if (co2DescricaoElement) co2DescricaoElement.textContent = `toneladas emitidas até agora em ${currentYear}`;
+            }
+
+            function atualizarEmissoesHistorico() {
+                const currentYear = 2025;
+                const segundosAno = segundosTotaisNoAno(currentYear);
+                const segundosPassados = segundosDesdeInicioDoAno(currentYear);
+                const dadosHistorico = emissoesHistorico[paginaAtualHistorico];
+
+                if (segundosAno === 0) return;
+
+                const emissaoPorSegundo2025 = dadosHistorico.global2025 / segundosAno;
+                const emitidoEm2025 = emissaoPorSegundo2025 * segundosPassados;
+                const emitidoTotal = dadosHistorico.baseAte2025 + emitidoEm2025;
+
+                if (co2NumeroElement2) co2NumeroElement2.textContent = formatarNumero(emitidoTotal);
+                if (co2DescricaoElement2) {
+                    if (paginaAtualHistorico === "Santa") {
+                        co2DescricaoElement2.textContent = `toneladas emitidas desde a criação do Santa Maria`;
+                    } else {
+                        co2DescricaoElement2.textContent = `toneladas emitidas desde a criação do ${paginaAtualHistorico}`;
+                    }
+                }
+            }
+
+            function atualizarRelogio() {
+                const agora = new Date();
+                const horas = String(agora.getHours()).padStart(2, '0');
+                const minutos = String(agora.getMinutes()).padStart(2, '0');
+                if (relogioElement) relogioElement.textContent = `${horas}:${minutos}`;
+            }
+
+            function mudarPaginaRegiao(pagina) {
+                if (!emissoes[pagina] || pagina === paginaAtualRegiao) return;
+                paginaAtualRegiao = pagina;
+                if (tituloPaginaElement) tituloPaginaElement.textContent = emissoes[pagina].titulo;
+                if (co2LegendaElement) co2LegendaElement.textContent = emissoes[pagina].legenda;
+                if (botoesRegiao) {
+                    botoesRegiao.forEach(btn => {
+                        btn.classList.remove("ativo");
+                        if (btn.dataset.pagina === pagina) btn.classList.add("ativo");
+                    });
+                }
+                atualizarEmissoesRegiao();
+            }
+
+            function mudarPaginaHistorico(pagina) {
+                if (!emissoesHistorico[pagina] || pagina === paginaAtualHistorico) return;
+                paginaAtualHistorico = pagina;
+                if (tituloPaginaElement2) tituloPaginaElement2.textContent = emissoesHistorico[pagina].titulo;
+                if (botoesHistorico) {
+                    botoesHistorico.forEach(btn => {
+                        btn.classList.remove("ativo");
+                        if (btn.dataset.pagina2 === pagina) btn.classList.add("ativo");
+                    });
+                }
+                atualizarEmissoesHistorico();
+            }
+
+            function iniciarTrocaAutomaticaRegiao() {
+                if (intervaloTroca1) clearInterval(intervaloTroca1);
+                const paginas = Object.keys(emissoes);
+                if (paginas.length === 0) return;
+                let index = paginas.indexOf(paginaAtualRegiao);
+                if (index === -1) index = 0;
+                intervaloTroca1 = setInterval(() => {
+                    index = (index + 1) % paginas.length;
+                    mudarPaginaRegiao(paginas[index]);
+                }, 5000);
+            }
+
+            function iniciarTrocaAutomaticaHistorico() {
+                if (intervaloTroca2) clearInterval(intervaloTroca2);
+                const paginas = Object.keys(emissoesHistorico);
+                if (paginas.length === 0) return;
+                let index = paginas.indexOf(paginaAtualHistorico);
+                if (index === -1) index = 0;
+                intervaloTroca2 = setInterval(() => {
+                    index = (index + 1) % paginas.length;
+                    mudarPaginaHistorico(paginas[index]);
+                }, 6000);
+            }
+
+            function populateYearDropdown() {
+                if (!yearDropdownListElement || !selectedYearDisplayElement) {
+                    console.error("Year dropdown elements not found for population.");
+                    return;
+                }
+                yearDropdownListElement.innerHTML = '';
+                const minYear = 1750;
+                const maxYear = 2025;
+                for (let year = maxYear; year >= minYear; year--) {
+                    const yearItem = document.createElement('div');
+                    yearItem.textContent = year;
+                    yearItem.dataset.year = year;
+                    if (year === customStartYear) {
+                        yearItem.classList.add('selected-item');
+                    }
+                    yearItem.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        customStartYear = parseInt(e.target.dataset.year, 10);
+                        selectedYearDisplayElement.textContent = customStartYear;
+
+                        const currentlySelected = yearDropdownListElement.querySelector('.selected-item');
+                        if (currentlySelected) {
+                            currentlySelected.classList.remove('selected-item');
+                        }
+                        e.target.classList.add('selected-item');
+
+                        if (yearSelectorElement) yearSelectorElement.classList.remove('open');
+                    });
+                    yearDropdownListElement.appendChild(yearItem);
+                }
+                selectedYearDisplayElement.textContent = customStartYear;
+            }
+
+            // Event listeners para o seletor de ano
+            if (yearSelectorElement) {
+                yearSelectorElement.addEventListener('click', (e) => {
+                    if (e.target === yearDropdownListElement) return;
+                    yearSelectorElement.classList.toggle('open');
+                });
+                document.addEventListener('click', (event) => {
+                    if (yearSelectorElement && !yearSelectorElement.contains(event.target)) {
+                        yearSelectorElement.classList.remove('open');
+                    }
+                });
+                yearSelectorElement.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        yearSelectorElement.classList.toggle('open');
+                    } else if (event.key === 'Escape') {
+                        yearSelectorElement.classList.remove('open');
+                    }
+                });
+            }
+
+            function aoClicarBotaoRegiao(event) {
+                console.log("aoClicarBotaoRegiao triggered");
+                const pagina = event.target.dataset.pagina;
+                if (pagina) {
+                    if (intervaloTroca1) {
+                        clearInterval(intervaloTroca1);
+                        intervaloTroca1 = null;
+                    }
+                    mudarPaginaRegiao(pagina);
+                }
+            }
+
+            function aoClicarBotaoHistorico(event) {
+                console.log("aoClicarBotaoHistorico triggered");
+                const pagina = event.target.dataset.pagina2;
+                if (pagina) {
+                    if (intervaloTroca2) {
+                        clearInterval(intervaloTroca2);
+                        intervaloTroca2 = null;
+                    }
+                    mudarPaginaHistorico(pagina);
+                }
+            }
+
+            function aoCalcularAnoCustomizado() {
+                console.log("[Calcular Custom] aoCalcularAnoCustomizado called");
+                const anoInput = customStartYear;
+                console.log("[Calcular Custom] Using customStartYear:", anoInput);
+
+                if (erroAnoElement) erroAnoElement.textContent = "";
+
+                if (isNaN(anoInput) || anoInput < 1750 || anoInput > 2025) {
+                    if (erroAnoElement) erroAnoElement.textContent = "Ano selecionado inválido.";
+                    fixedEmissionsSumForCustomYear = 0;
+                    console.log("[Calcular Custom] Validation failed for anoInput from customStartYear.");
+                    atualizarEmissoesCustomYear();
+                    return;
+                }
+
+                fixedEmissionsSumForCustomYear = 0;
+                for (let year = anoInput; year <= 2023; year++) {
+                    const yearStr = year.toString();
+                    if (co2EmissionsByYear.hasOwnProperty(yearStr) && typeof co2EmissionsByYear[yearStr] === 'number' && !isNaN(co2EmissionsByYear[yearStr])) {
+                        fixedEmissionsSumForCustomYear += co2EmissionsByYear[yearStr] * 1e9;
+                    } else {
+                        console.warn(`[Calcular Custom] Data for year ${yearStr} problem. Value:`, co2EmissionsByYear[yearStr]);
+                    }
+                }
+                console.log(`[Calcular Custom] Sum from ${anoInput}-2023:`, fixedEmissionsSumForCustomYear);
+
+                if (anoInput <= 2024) {
+                    if (typeof EMISSIONS_2024_ANNUAL === 'number' && !isNaN(EMISSIONS_2024_ANNUAL)) {
+                        fixedEmissionsSumForCustomYear += EMISSIONS_2024_ANNUAL;
+                    } else {
+                        console.warn("[Calcular Custom] EMISSIONS_2024_ANNUAL problem:", EMISSIONS_2024_ANNUAL);
+                    }
+                }
+                console.log(`[Calcular Custom] Sum after 2024 (if ${anoInput} <= 2024):`, fixedEmissionsSumForCustomYear);
+
+                if (isNaN(fixedEmissionsSumForCustomYear)) {
+                    console.error("[Calcular Custom] CRITICAL: fixedEmissionsSumForCustomYear became NaN.");
+                    if (erroAnoElement) erroAnoElement.textContent = "Erro ao calcular dados históricos.";
+                    customStartYear = 1990;
+                    if (selectedYearDisplayElement) selectedYearDisplayElement.textContent = customStartYear;
+                    if (yearDropdownListElement) {
+                        const oldSel = yearDropdownListElement.querySelector('.selected-item');
+                        if (oldSel) oldSel.classList.remove('selected-item');
+                        const newSel = yearDropdownListElement.querySelector(`[data-year="${customStartYear}"]`);
+                        if (newSel) newSel.classList.add('selected-item');
+                    }
+                }
+                atualizarEmissoesCustomYear();
+            }
+
+            function atualizarEmissoesCustomYear() {
+                if (customStartYear === null || isNaN(customStartYear)) {
+                    if (co2NumeroElement3) co2NumeroElement3.textContent = "...";
+                    if (co2DescricaoElement3) co2DescricaoElement3.textContent = "Selecione um ano e calcule.";
+                    return;
+                }
+
+                const currentYearForCalc = 2025;
+                let totalEmitidoDesdeCustomYear = fixedEmissionsSumForCustomYear;
+
+                if (isNaN(totalEmitidoDesdeCustomYear)) {
+                    console.error("[Atualizar Custom] fixedEmissionsSumForCustomYear is NaN before adding 2025 part! Value:", fixedEmissionsSumForCustomYear);
+                    if (co2NumeroElement3) co2NumeroElement3.textContent = "Erro";
+                    if (co2DescricaoElement3) co2DescricaoElement3.textContent = "Erro no cálculo base.";
+                    return;
+                }
+
+                if (customStartYear <= currentYearForCalc) {
+                    const segundosAno2025 = segundosTotaisNoAno(currentYearForCalc);
+                    const segundosPassados2025 = segundosDesdeInicioDoAno(currentYearForCalc);
+                    const emissaoAnual2025Mundo = emissoes.mundo.anual;
+
+                    if (segundosAno2025 > 0) {
+                        const emissaoPorSegundo2025 = emissaoAnual2025Mundo / segundosAno2025;
+                        const emitidoEm2025 = emissaoPorSegundo2025 * segundosPassados2025;
+                        if (!isNaN(emitidoEm2025)) {
+                            totalEmitidoDesdeCustomYear += emitidoEm2025;
+                        } else {
+                            console.warn("[Atualizar Custom] emitidoEm2025 for 2025 calculation is NaN.");
+                        }
+                    }
+                }
+                if (co2NumeroElement3) co2NumeroElement3.textContent = formatarNumero(totalEmitidoDesdeCustomYear);
+                if (co2DescricaoElement3) co2DescricaoElement3.textContent = `toneladas de CO₂ emitidas globalmente desde ${customStartYear} até agora`;
+            }
+
+            // Nova função para calcular emissões do agronegócio
+            function calcularEmissoesAgronegocio() {
+                const activity = agroActivityElement.value;
+                const area = parseFloat(agroAreaElement.value);
+                const cattle = parseFloat(agroCattleElement.value);
+
+                if (isNaN(area) || area <= 0) {
+                    agroResultElement.textContent = "Por favor, insira uma área válida.";
+                    return;
+                }
+
+                if (activity === "pecuaria" && (isNaN(cattle) || cattle <= 0)) {
+                    agroResultElement.textContent = "Para pecuária, insira o número de cabeças.";
+                    return;
+                }
+
+                let emissions = 0;
+                let description = "";
+
+                if (activity === "pecuaria") {
+                    emissions = cattle * agroEmissions[activity];
+                    description = `${formatarNumero(emissions)} toneladas de CO₂ equivalente por ano para ${cattle} cabeças de gado`;
+                } else {
+                    emissions = area * agroEmissions[activity];
+                    const activityNames = {
+                        soja: "soja",
+                        milho: "milho",
+                        cana: "cana-de-açúcar"
+                    };
+                    description = `${formatarNumero(emissions)} toneladas de CO₂ equivalente por ano para ${area} hectares de ${activityNames[activity]}`;
+                }
+
+                agroResultElement.textContent = description;
+            }
+
+            // Event listener para habilitar/desabilitar o campo de cabeças de gado
+            if (agroActivityElement && agroCattleElement) {
+                agroActivityElement.addEventListener('change', function () {
+                    if (this.value === 'pecuaria') {
+                        agroCattleElement.disabled = false;
+                        agroAreaElement.placeholder = "Ex: 100 (área da pastagem)";
+                    } else {
+                        agroCattleElement.disabled = true;
+                        agroCattleElement.value = '';
+                        agroAreaElement.placeholder = "Ex: 1000";
+                    }
+                });
+            }
+
+            // Event listener para o botão de calcular emissões do agronegócio
+            if (btnCalcularAgroElement) {
+                btnCalcularAgroElement.addEventListener('click', calcularEmissoesAgronegocio);
+            }
+            function inicializarMapa() {
+                console.log("[Mapa] Inicializando...");
+
+                const map = L.map('agroMap', { preferCanvas: true }).setView([-15, -55], 4);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(map);
+
+                let deforestationLayer = L.layerGroup().addTo(map);
+                let agricultureLayer = L.layerGroup().addTo(map);
+
+                function estadoStyle(feature) {
+                    console.log(`[Mapa] Desenhando ${feature.id}, tipo: ${feature.geometry.type}, coords: ${feature.geometry.coordinates.length}`);
+                    return {
+                        color: '#333333',       // contorno
+                        weight: 2,              // espessura
+                        fillColor: '#1e90ff',   // azul
+                        fillOpacity: 0.3        // visível
+                    };
+                }
+
+                function onEachEstado(feature, layer) {
+                    const sigla = feature.id || "??";
+                    layer.bindPopup(`<b>Estado: ${sigla}</b>`);
+                    layer.on("click", () => {
+                        console.log(`[Mapa] Clique no estado: ${sigla}`);
+                    });
+                }
+
+                const geojsonUrl = 'https://raw.githubusercontent.com/giuliano-macedo/geodata-br-states/main/geojson/br_states.json';
+
+                fetch(geojsonUrl)
+                    .then(resp => resp.json())
+                    .then(data => {
+                        console.log("[Mapa] GeoJSON recebido (bruto):", data);
+
+                        // Forçar que tenha "type: FeatureCollection" na raiz
+                        const fixedData = {
+                            type: "FeatureCollection",
+                            features: data.features.map(f => ({
+                                type: "Feature",
+                                id: f.id,
+                                properties: f.properties || {},
+                                geometry: f.geometry
+                            }))
+                        };
+
+                        console.log("[Mapa] Estrutura corrigida:", fixedData);
+
+                        const geojson = L.geoJSON(fixedData, {
+                            style: {
+                                color: "#000000",      // borda preta
+                                weight: 2,
+                                fillColor: "#ffcc00",  // amarelo
+                                fillOpacity: 0.5
+                            },
+                            onEachFeature: (feature, layer) => {
+                                layer.bindPopup(`<b>Estado: ${feature.id}</b>`);
+                            }
+                        }).addTo(map);
+
+                        map.fitBounds(geojson.getBounds(), { padding: [20, 20] });
+                        console.log("[Mapa] Estados adicionados ao mapa.");
+                    })
+                    .catch(err => console.error("[Mapa] Erro ao carregar GeoJSON:", err));
+
+
+            }
+
+
+
+            // Inicialização dos gráficos com elementos centralizados
+            function inicializarGraficos() {
+                // (mantive seus gráficos originais)
+                const ctxEmissions = document.getElementById('emissionsChart');
+                if (ctxEmissions) {
+                    new Chart(ctxEmissions, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Soja', 'Milho', 'Cana-de-açúcar', 'Pecuária (por cabeça)'],
+                            datasets: [{
+                                label: 'tCO₂eq por hectare/ano',
+                                data: [0.85, 0.72, 0.45, 56.2],
+                                backgroundColor: [
+                                    'rgba(255, 99, 132, 0.7)',
+                                    'rgba(54, 162, 235, 0.7)',
+                                    'rgba(255, 206, 86, 0.7)',
+                                    'rgba(75, 192, 192, 0.7)'
+                                ],
+                                borderColor: [
+                                    'rgba(255, 99, 132, 1)',
+                                    'rgba(54, 162, 235, 1)',
+                                    'rgba(255, 206, 86, 1)',
+                                    'rgba(75, 192, 192, 1)'
+                                ],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                    labels: {
+                                        color: 'white',
+                                        font: {
+                                            size: 12
+                                        }
+                                    }
+                                },
+                                title: {
+                                    display: false
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        color: 'white'
+                                    },
+                                    grid: {
+                                        color: 'rgba(255, 255, 255, 0.1)'
+                                    }
+                                },
+                                x: {
+                                    ticks: {
+                                        color: 'white'
+                                    },
+                                    grid: {
+                                        color: 'rgba(255, 255, 255, 0.1)'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // Gráfico 2: Área cultivada
+                const ctxArea = document.getElementById('areaChart');
+                if (ctxArea) {
+                    new Chart(ctxArea, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Soja', 'Milho', 'Cana-de-açúcar', 'Outras'],
+                            datasets: [{
+                                label: 'Milhões de hectares',
+                                data: [41.2, 21.5, 10.4, 27.1],
+                                backgroundColor: [
+                                    'rgba(255, 99, 132, 0.7)',
+                                    'rgba(54, 162, 235, 0.7)',
+                                    'rgba(255, 206, 86, 0.7)',
+                                    'rgba(153, 102, 255, 0.7)'
+                                ],
+                                borderColor: [
+                                    'rgba(255, 99, 132, 1)',
+                                    'rgba(54, 162, 235, 1)',
+                                    'rgba(255, 206, 86, 1)',
+                                    'rgba(153, 102, 255, 1)'
+                                ],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                    labels: {
+                                        color: 'white',
+                                        font: {
+                                            size: 12
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // Gráfico 3: Emissões por setor
+                const ctxSector = document.getElementById('sectorChart');
+                if (ctxSector) {
+                    new Chart(ctxSector, {
+                        type: 'pie',
+                        data: {
+                            labels: ['Pecuária', 'Soja', 'Cana-de-açúcar', 'Outras culturas'],
+                            datasets: [{
+                                label: 'Milhões de tCO₂eq',
+                                data: [415, 125, 85, 75],
+                                backgroundColor: [
+                                    'rgba(255, 99, 132, 0.7)',
+                                    'rgba(54, 162, 235, 0.7)',
+                                    'rgba(255, 206, 86, 0.7)',
+                                    'rgba(75, 192, 192, 0.7)'
+                                ],
+                                borderColor: [
+                                    'rgba(255, 99, 132, 1)',
+                                    'rgba(54, 162, 235, 1)',
+                                    'rgba(255, 206, 86, 1)',
+                                    'rgba(75, 192, 192, 1)'
+                                ],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                    labels: {
+                                        color: 'white',
+                                        font: {
+                                            size: 12
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // Gráfico 4: Comparação Agronegócio vs Agricultura Familiar
+                const ctxComparison = document.getElementById('comparisonChart');
+                if (ctxComparison) {
+                    new Chart(ctxComparison, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Produção de Alimentos', 'Emprego', 'Uso da Terra', 'Emissões por hectare'],
+                            datasets: [
+                                {
+                                    label: 'Agronegócio',
+                                    data: [70, 20, 75, 80],
+                                    backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                                    borderColor: 'rgba(255, 99, 132, 1)',
+                                    borderWidth: 1
+                                },
+                                {
+                                    label: 'Agricultura Familiar',
+                                    data: [30, 80, 25, 20],
+                                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                                    borderColor: 'rgba(54, 162, 235, 1)',
+                                    borderWidth: 1
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 100,
+                                    ticks: {
+                                        color: 'white'
+                                    },
+                                    grid: {
+                                        color: 'rgba(255, 255, 255, 0.1)'
+                                    }
+                                },
+                                x: {
+                                    ticks: {
+                                        color: 'white'
+                                    },
+                                    grid: {
+                                        color: 'rgba(255, 255, 255, 0.1)'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                    labels: {
+                                        color: 'white',
+                                        font: {
+                                            size: 12
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
+            // Configuração inicial
+            console.log("Setting up event listeners...");
+            if (botoesRegiaoContainer) botoesRegiaoContainer.addEventListener('click', aoClicarBotaoRegiao);
+            if (botoesHistoricoContainer) botoesHistoricoContainer.addEventListener('click', aoClicarBotaoHistorico);
+            if (btnCalcularAnoElement) btnCalcularAnoElement.addEventListener('click', aoCalcularAnoCustomizado);
+
+            console.log("Initial page setup...");
+            mudarPaginaRegiao(paginaAtualRegiao);
+            mudarPaginaHistorico(paginaAtualHistorico);
+            atualizarRelogio();
+
+            console.log("Populating year dropdown...");
+            populateYearDropdown();
+
+            console.log("Attempting initial calculation for custom year section with default value (1990)...");
+            aoCalcularAnoCustomizado();
+
+            console.log("Initializing map...");
+            inicializarMapa();
+
+            console.log("Initializing charts...");
+            inicializarGraficos();
+
+            console.log("Starting intervals...");
+            setInterval(() => {
+                atualizarEmissoesRegiao();
+                atualizarEmissoesHistorico();
+                atualizarEmissoesCustomYear();
+                atualizarRelogio();
+            }, 1000);
+
+            iniciarTrocaAutomaticaRegiao();
+            iniciarTrocaAutomaticaHistorico();
+
+            console.log("Script initialization complete.");
+        });
+    </script>
+</body>
+</html>

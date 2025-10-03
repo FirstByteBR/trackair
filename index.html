@@ -10,9 +10,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;900&family=Segoe+UI:wght@400;700&display=swap" rel="stylesheet">
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
+
     <style>
         :root {
             --text-color: white;
@@ -136,6 +135,15 @@
             font-size: 1rem;
             opacity: 0.85;
             margin-top: 15px;
+        }
+        /* Ajuste de cor para hiperlinks dentro de .legenda */
+        .legenda a {
+            color: #00d4ff; /* Azul claro */
+            text-decoration: none; /* Remover sublinhado padrão */
+        }
+
+        .legenda a:hover {
+            text-decoration: underline; /* Adicionar sublinhado ao passar o mouse */
         }
 
         .botoes {
@@ -333,7 +341,7 @@
         }
 
         .agro-input-group {
-            display: flex;
+            display: flex; /* Default to flex, will be overridden to none for hidden fields */
             flex-direction: column;
             gap: 5px;
         }
@@ -372,51 +380,6 @@
             min-height: 1.5em;
         }
 
-        /* Map Styles */
-        .map-container {
-            position: relative;
-            width: 100%;
-            height: 500px;
-            border-radius: var(--section-radius);
-            overflow: hidden;
-            margin-top: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        #agroMap {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        .map-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px;
-            font-size: 0.9rem;
-            text-align: center;
-            z-index: 1000;
-        }
-
-        .map-controls {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px;
-            border-radius: 5px;
-            z-index: 1000;
-        }
-
-        .map-controls label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-        }
-
         /* Chart Styles - Centralizados */
         .charts-container {
             display: flex;
@@ -435,7 +398,7 @@
             backdrop-filter: blur(5px);
             display: flex;
             flex-direction: column;
-            align-items: center;
+            align-items: center; /* Centraliza o conteúdo (incluindo o chart-container) */
         }
 
         .chart-title {
@@ -448,11 +411,14 @@
         .chart-container {
             width: 100%;
             display: flex;
-            justify-content: center;
+            justify-content: center; /* Garante que o canvas dentro dele esteja centralizado */
+            /* Min-height para os gráficos não ficarem muito achatados */
+            min-height: 250px; 
         }
 
         canvas {
             max-width: 100%;
+            height: auto; /* Garante que a altura se ajuste para manter a proporção */
         }
 
         /* Responsive Adjustments */
@@ -468,7 +434,6 @@
             .logo-container { right: 10px; }
             .logo-container-lefty { left: 10px; }
             .logoObs, .logoCop, .logoNew { width: 130px; }
-            .map-container { height: 400px; }
             .charts-container { flex-direction: column; }
         }
 
@@ -488,7 +453,6 @@
             .logo-container, .logo-container-lefty { position: static; transform: none; flex-direction: row; justify-content: center; width: 100%; margin-bottom: 15px; padding: 0 10px; }
             .logoObs, .logoCop, .logoNew { width: 70px; padding: 5px; }
             .logo-container > .logo-img, .logo-container-lefty > .logo-img { margin: 0 5px; }
-            .map-container { height: 300px; }
         }
     </style>
 </head>
@@ -567,38 +531,14 @@
                     <label for="agro-area">Área (hectares):</label>
                     <input type="number" id="agro-area" class="agro-input" placeholder="Ex: 1000" min="0">
                 </div>
-                <div class="agro-input-group">
+                <div class="agro-input-group" id="agroCattleGroup"> <!-- Added ID for easier JS access -->
                     <label for="agro-cattle">Número de cabeças (apenas para pecuária):</label>
-                    <input type="number" id="agro-cattle" class="agro-input" placeholder="Ex: 500" min="0" disabled>
+                    <input type="number" id="agro-cattle" class="agro-input" placeholder="Ex: 500" min="0">
                 </div>
             </div>
             <button class="botao" id="btnCalcularAgro">Calcular Emissões</button>
             <div class="agro-result" id="agroResult"></div>
-            <div class="legenda">Baseado em dados do SEEG (Sistema de Estimativas de Emissões de Gases de Efeito Estufa) e EMBRAPA</div>
-        </section>
-
-        <!-- Nova seção: Mapas Interativos -->
-        <section>
-            <div class="subtitulo">🗺️ Mapas Interativos de Desmatamento e Agricultura</div>
-            <p>Visualize as áreas mais afetadas pelo desmatamento e as regiões de alta atividade agrícola no Brasil</p>
-            
-            <div class="map-container">
-                <div id="agroMap"></div>
-                <div class="map-controls">
-                    <label><input type="checkbox" id="showDeforestation" checked> Desmatamento</label>
-                    <label><input type="checkbox" id="showAgriculture" checked> Áreas Agrícolas</label>
-                </div>
-                <div class="map-overlay">Dados: TerraBrasilis (INPE) e IBGE - Baseado em dados reais de 2022</div>
-            </div>
-            
-            <div style="margin-top: 20px;">
-                <a href="https://terrabrasilis.dpi.inpe.br/app/map/deforestation" target="_blank" class="botao" style="text-decoration: none; display: inline-block;">
-                    Abrir Mapa de Desmatamento - TerraBrasilis
-                </a>
-                <a href="https://infoamazonia.org/2023/03/21/desmatamento-na-amazonia-passado-presente-e-futuro/" target="_blank" class="botao" style="text-decoration: none; display: inline-block; margin-left: 10px;">
-                    Ver Análise do Desmatamento na Amazônia
-                </a>
-            </div>
+            <div class="legenda">Baseado em dados do <a href="https://seeg.eco.br/" target="_blank" rel="noopener noreferrer">SEEG</a> (Sistema de Estimativas de Emissões de Gases de Efeito Estufa) e <a href="https://www.embrapa.br/" target="_blank" rel="noopener noreferrer">EMBRAPA</a></div>
         </section>
 
         <!-- Nova seção: Gráficos Comparativos -->
@@ -635,12 +575,10 @@
                 </div>
             </div>
             
-            <div class="legenda">Fontes: SEEG, EMBRAPA, IBGE e CONAB - Dados de 2022</div>
+            <div class="legenda">Fontes: <a href="https://seeg.eco.br/" target="_blank" rel="noopener noreferrer">SEEG</a>, <a href="https://www.embrapa.br/" target="_blank" rel="noopener noreferrer">EMBRAPA</a>, <a href="https://www.ibge.gov.br/" target="_blank" rel="noopener noreferrer">IBGE</a> e <a href="https://www.conab.gov.br/" target="_blank" rel="noopener noreferrer">CONAB</a> - Dados de 2022</div>
         </section>
     </main>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -649,10 +587,10 @@
 
         // Dados de emissões do agronegócio atualizados com base em https://indicadores.agro.gov.br/
         const agroEmissions = {
-            soja: 0.85,       // tCO2eq por hectare por ano (SEEG/EMBRAPA)
-            milho: 0.72,      // tCO2eq por hectare por ano (SEEG/EMBRAPA)
-            cana: 0.45,       // tCO2eq por hectare por ano (SEEG - considerando queima)
-            pecuaria: 56.2    // tCO2eq por cabeça por ano (SEEG - gado de corte)
+            soja: 0.85, // tCO2eq por hectare por ano (SEEG/EMBRAPA)
+            milho: 0.72, // tCO2eq por hectare por ano (SEEG/EMBRAPA)
+            cana: 0.45, // tCO2eq por hectare por ano (SEEG - considerando queima)
+            pecuaria: 56.2 // tCO2eq por cabeça por ano (SEEG - gado de corte)
         };
 
         // Dados históricos de emissões de CO2 (mantido do código original)
@@ -715,12 +653,9 @@
             const agroActivityElement = document.getElementById("agro-activity");
             const agroAreaElement = document.getElementById("agro-area");
             const agroCattleElement = document.getElementById("agro-cattle");
+            const agroCattleGroupElement = document.getElementById("agroCattleGroup"); // Get the group
             const btnCalcularAgroElement = document.getElementById("btnCalcularAgro");
             const agroResultElement = document.getElementById("agroResult");
-
-            // Elementos do mapa
-            const showDeforestationElement = document.getElementById("showDeforestation");
-            const showAgricultureElement = document.getElementById("showAgriculture");
 
             // Funções de cálculo e atualização
             function segundosTotaisNoAno(year) {
@@ -1042,99 +977,34 @@
                 agroResultElement.textContent = description;
             }
 
+            // Função para controlar a visibilidade do campo de cabeças de gado
+            function toggleCattleInputVisibility() {
+                if (agroActivityElement.value === 'pecuaria') {
+                    agroCattleGroupElement.style.display = 'flex';
+                    agroCattleElement.disabled = false;
+                    agroAreaElement.placeholder = "Ex: 100 (área da pastagem)";
+                } else {
+                    agroCattleGroupElement.style.display = 'none';
+                    agroCattleElement.disabled = true;
+                    agroCattleElement.value = ''; // Clear value when hidden
+                    agroAreaElement.placeholder = "Ex: 1000";
+                }
+            }
+
             // Event listener para habilitar/desabilitar o campo de cabeças de gado
-            if (agroActivityElement && agroCattleElement) {
-                agroActivityElement.addEventListener('change', function () {
-                    if (this.value === 'pecuaria') {
-                        agroCattleElement.disabled = false;
-                        agroAreaElement.placeholder = "Ex: 100 (área da pastagem)";
-                    } else {
-                        agroCattleElement.disabled = true;
-                        agroCattleElement.value = '';
-                        agroAreaElement.placeholder = "Ex: 1000";
-                    }
-                });
+            if (agroActivityElement && agroCattleGroupElement && agroCattleElement) {
+                agroActivityElement.addEventListener('change', toggleCattleInputVisibility);
+                // Initial call to set correct state on page load
+                toggleCattleInputVisibility(); 
             }
 
             // Event listener para o botão de calcular emissões do agronegócio
             if (btnCalcularAgroElement) {
                 btnCalcularAgroElement.addEventListener('click', calcularEmissoesAgronegocio);
             }
-            function inicializarMapa() {
-                console.log("[Mapa] Inicializando...");
-
-                const map = L.map('agroMap', { preferCanvas: true }).setView([-15, -55], 4);
-
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; OpenStreetMap contributors'
-                }).addTo(map);
-
-                let deforestationLayer = L.layerGroup().addTo(map);
-                let agricultureLayer = L.layerGroup().addTo(map);
-
-                function estadoStyle(feature) {
-                    console.log(`[Mapa] Desenhando ${feature.id}, tipo: ${feature.geometry.type}, coords: ${feature.geometry.coordinates.length}`);
-                    return {
-                        color: '#333333',       // contorno
-                        weight: 2,              // espessura
-                        fillColor: '#1e90ff',   // azul
-                        fillOpacity: 0.3        // visível
-                    };
-                }
-
-                function onEachEstado(feature, layer) {
-                    const sigla = feature.id || "??";
-                    layer.bindPopup(`<b>Estado: ${sigla}</b>`);
-                    layer.on("click", () => {
-                        console.log(`[Mapa] Clique no estado: ${sigla}`);
-                    });
-                }
-
-                const geojsonUrl = 'https://raw.githubusercontent.com/giuliano-macedo/geodata-br-states/main/geojson/br_states.json';
-
-                fetch(geojsonUrl)
-                    .then(resp => resp.json())
-                    .then(data => {
-                        console.log("[Mapa] GeoJSON recebido (bruto):", data);
-
-                        // Forçar que tenha "type: FeatureCollection" na raiz
-                        const fixedData = {
-                            type: "FeatureCollection",
-                            features: data.features.map(f => ({
-                                type: "Feature",
-                                id: f.id,
-                                properties: f.properties || {},
-                                geometry: f.geometry
-                            }))
-                        };
-
-                        console.log("[Mapa] Estrutura corrigida:", fixedData);
-
-                        const geojson = L.geoJSON(fixedData, {
-                            style: {
-                                color: "#000000",      // borda preta
-                                weight: 2,
-                                fillColor: "#ffcc00",  // amarelo
-                                fillOpacity: 0.5
-                            },
-                            onEachFeature: (feature, layer) => {
-                                layer.bindPopup(`<b>Estado: ${feature.id}</b>`);
-                            }
-                        }).addTo(map);
-
-                        map.fitBounds(geojson.getBounds(), { padding: [20, 20] });
-                        console.log("[Mapa] Estados adicionados ao mapa.");
-                    })
-                    .catch(err => console.error("[Mapa] Erro ao carregar GeoJSON:", err));
-
-
-            }
-
-
-
             // Inicialização dos gráficos com elementos centralizados
             function inicializarGraficos() {
-                // (mantive seus gráficos originais)
+                // Gráfico 1: Emissões por Cultura (com escala logarítmica)
                 const ctxEmissions = document.getElementById('emissionsChart');
                 if (ctxEmissions) {
                     new Chart(ctxEmissions, {
@@ -1142,7 +1012,7 @@
                         data: {
                             labels: ['Soja', 'Milho', 'Cana-de-açúcar', 'Pecuária (por cabeça)'],
                             datasets: [{
-                                label: 'tCO₂eq por hectare/ano',
+                                // Removendo o label do dataset, pois a legenda será removida
                                 data: [0.85, 0.72, 0.45, 56.2],
                                 backgroundColor: [
                                     'rgba(255, 99, 132, 0.7)',
@@ -1162,15 +1032,16 @@
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
+                            layout: { // Ajustes de padding para dar espaço ao título do eixo Y e rótulos X
+                                padding: {
+                                    left: 60, // Aumentado para dar espaço ao título do eixo Y (rotacionado)
+                                    right: 20, // Espaço para o último rótulo X não ser cortado
+                                    bottom: 20 // Espaço para os rótulos do eixo X
+                                }
+                            },
                             plugins: {
                                 legend: {
-                                    position: 'top',
-                                    labels: {
-                                        color: 'white',
-                                        font: {
-                                            size: 12
-                                        }
-                                    }
+                                    display: false // Removendo a legenda completamente
                                 },
                                 title: {
                                     display: false
@@ -1178,9 +1049,31 @@
                             },
                             scales: {
                                 y: {
+                                    type: 'logarithmic', // Aplicando escala logarítmica
                                     beginAtZero: true,
+                                    title: { // Adicionando título ao eixo Y
+                                        display: true,
+                                        text: 'tCO₂eq (Escala Logarítmica)',
+                                        color: 'white',
+                                        font: {
+                                            size: 14,
+                                            weight: 'bold'
+                                        }
+                                    },
                                     ticks: {
-                                        color: 'white'
+                                        color: 'white',
+                                        callback: function(value, index, ticks) {
+                                            // Format ticks for better readability on log scale
+                                            // Show powers of 10 and significant values
+                                            if (value === 0.1 || value === 1 || value === 10 || value === 100) {
+                                                return value;
+                                            }
+                                            // For values between powers of 10, show if they are easy to read (e.g., 0.2, 0.5)
+                                            if (value > 0 && value < 100 && (value * 10) % 1 === 0 && (value.toString().length < 4 || value % 5 === 0)) {
+                                                return value;
+                                            }
+                                            return null;
+                                        }
                                     },
                                     grid: {
                                         color: 'rgba(255, 255, 255, 0.1)'
@@ -1188,7 +1081,14 @@
                                 },
                                 x: {
                                     ticks: {
-                                        color: 'white'
+                                        color: 'white',
+                                        maxRotation: 45,   // Permitir rotação para etiquetas na diagonal
+                                        minRotation: 45,   // Definir rotação mínima para diagonal
+                                        autoSkip: false,  // Garante que todas as etiquetas sejam exibidas
+                                        font: {
+                                            size: 10 // Reduz o tamanho da fonte para evitar sobreposição
+                                        },
+                                        padding: 5 // Adiciona um pequeno padding entre as etiquetas e o eixo
                                     },
                                     grid: {
                                         color: 'rgba(255, 255, 255, 0.1)'
@@ -1364,9 +1264,6 @@
 
             console.log("Attempting initial calculation for custom year section with default value (1990)...");
             aoCalcularAnoCustomizado();
-
-            console.log("Initializing map...");
-            inicializarMapa();
 
             console.log("Initializing charts...");
             inicializarGraficos();

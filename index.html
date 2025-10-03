@@ -593,9 +593,14 @@
             pecuaria: 56.2 // tCO2eq por cabeça por ano (SEEG - gado de corte)
         };
 
-        // Dados históricos de emissões de CO2 (mantido do código original)
+        // Dados históricos de emissões de CO2 (AGORA COM DADOS COMPLETOS DESDE 1750)
         const co2EmissionsByYear = {
-            "2010": 33.35590344, "2011": 34.50453812, "2012": 35.00002034, "2013": 35.30165585, "2014": 35.45009475, "2015": 35.40489697, "2016": 35.41665608, "2017": 35.98989788, "2018": 36.73042656, "2019": 37.10427786, "2020": 35.12652612, "2021": 36.99173628, "2022": 37.29383639, "2023": 37.79156871
+            "1750": 0.009305937, "1751": 0.009407229, "1752": 0.009505168, "1753": 0.00961049, "1754": 0.00973358, "1755": 0.009793468, "1756": 0.009909914, "1757": 0.010093936, "1758": 0.010216358, "1759": 0.010338854, "1760": 0.010514331, "1761": 0.010747885, "1762": 0.010952198, "1763": 0.011191592, "1764": 0.011396982, "1765": 0.011643486, "1766": 0.01187608, "1767": 0.012152509, "1768": 0.012466936, "1769": 0.012780074, "1770": 0.013097216, "1771": 0.013369488, "1772": 0.013623507, "1773": 0.013808138, "1774": 0.014012415, "1775": 0.01433892, "1776": 0.014654124, "1777": 0.014959537, "1778": 0.015243483, "1779": 0.015535235, "1780": 0.015878726, "1781": 0.016234383, "1782": 0.016580954, "1783": 0.017062751, "1784": 0.017471093, "1785": 0.017965127, "1786": 0.018447497, "1787": 0.01885913, "1788": 0.019286229, "1789": 0.019863425, "1790": 0.020398094, "1791": 0.020931749, "1792": 0.021929215, "1793": 0.022297261, "1794": 0.022519656, "1795": 0.022315246, "1796": 0.022121375, "1797": 0.022090078, "1798": 0.023105929, "1799": 0.027485207,
+            "1800": 0.032798352, "1801": 0.03198605, "1802": 0.040310473, "1803": 0.029538506, "1804": 0.031769177, "1805": 0.031251817, "1806": 0.032704622, "1807": 0.036200654, "1808": 0.035497789, "1809": 0.036333813, "1810": 0.039492312, "1811": 0.040176681, "1812": 0.040814523, "1813": 0.041206139, "1814": 0.042226646, "1815": 0.043587265, "1816": 0.045496577, "1817": 0.049275922, "1818": 0.05139201, "1819": 0.050930167, "1820": 0.050733074, "1821": 0.052059349, "1822": 0.054021712, "1823": 0.056357763, "1824": 0.057583637, "1825": 0.060730867, "1826": 0.06138213, "1827": 0.065738568, "1828": 0.06668179, "1829": 0.066307408, "1830": 0.088988498, "1831": 0.083250906, "1832": 0.082091751, "1833": 0.083248945, "1834": 0.088763111, "1835": 0.097399594, "1836": 0.106894495, "1837": 0.106199422, "1838": 0.105845261, "1839": 0.109653034, "1840": 0.118808512, "1841": 0.122165547, "1842": 0.129388789, "1843": 0.132369389, "1844": 0.141966448, "1845": 0.155073404, "1846": 0.157701789, "1847": 0.170796751, "1848": 0.17364348, "1849": 0.185048032,
+            "1850": 0.196847595, "1851": 0.198778547, "1852": 0.207595091, "1853": 0.217236968, "1854": 0.255038557, "1855": 0.260259851, "1856": 0.278245627, "1857": 0.281181048, "1858": 0.28554839, "1859": 0.302572176, "1860": 0.332298456, "1861": 0.349190174, "1862": 0.355991078, "1863": 0.379534888, "1864": 0.409525433, "1865": 0.43485133, "1866": 0.449067025, "1867": 0.480813908, "1868": 0.494493527, "1869": 0.524731062, "1870": 0.536123276, "1871": 0.569776587, "1872": 0.630961473, "1873": 0.670467213, "1874": 0.628662235, "1875": 0.681047983, "1876": 0.690582523, "1877": 0.704032862, "1878": 0.709649549, "1879": 0.75979439, "1880": 0.858055674, "1881": 0.887964969, "1882": 0.937888221, "1883": 0.997514559, "1884": 1.009429803, "1885": 1.01714455, "1886": 1.032613676, "1887": 1.083727515, "1888": 1.20080164, "1889": 1.201516232, "1890": 1.306591164, "1891": 1.368915607, "1892": 1.379808961, "1893": 1.362515016, "1894": 1.411532927, "1895": 1.495238838, "1896": 1.544660873, "1897": 1.617492798, "1898": 1.705960878, "1899": 1.863135385,
+            "1900": 1.96149074, "1901": 2.023963811, "1902": 2.074800354, "1903": 2.262046168, "1904": 2.28750933, "1905": 2.437062082, "1906": 2.544485736, "1907": 2.900324676, "1908": 2.785686667, "1909": 2.901167235, "1910": 3.0433259, "1911": 3.090098124, "1912": 3.246477083, "1913": 3.516532973, "1914": 3.189786302, "1915": 3.140276533, "1916": 3.391973242, "1917": 3.54813832, "1918": 3.499686323, "1919": 3.033839374, "1920": 3.537837259, "1921": 3.106184128, "1922": 3.254462643, "1923": 3.690697713, "1924": 3.702777064, "1925": 3.740633513, "1926": 3.677407432, "1927": 4.012947385, "1928": 3.99631173, "1929": 4.288211409, "1930": 3.958095957, "1931": 3.539320339, "1932": 3.192591529, "1933": 3.362683413, "1934": 3.656187221, "1935": 3.83574255, "1936": 4.207930753, "1937": 4.496715384, "1938": 4.229619213, "1939": 4.470134676, "1940": 4.884663525, "1941": 4.999092726, "1942": 4.982524053, "1943": 5.0752732, "1944": 5.162486555, "1945": 4.28931269, "1946": 4.608546995, "1947": 5.165205488, "1948": 5.447884758, "1949": 5.204035324,
+            "1950": 5.93024384,  "1951": 6.381428815, "1952": 6.467460418, "1953": 6.650885226, "1954": 6.789529059, "1955": 7.443895798, "1956": 7.926012519, "1957": 8.185644782, "1958": 8.417187818, "1959": 8.854689147, "1960": 9.387010408, "1961": 9.415042136, "1962": 9.747287164, "1963": 10.26677221,  "1964": 10.8244661,  "1965": 11.31060044, "1966": 11.86264632, "1967": 12.23736928, "1968": 12.90528307, "1969": 13.76178529, "1970": 14.89912444, "1971": 15.50385472, "1972": 16.22459665, "1973": 17.0850929,   "1974": 17.01107168, "1975": 17.05275263, "1976": 17.98911207, "1977": 18.49863422, "1978": 19.06929054, "1979": 19.60902029, "1980": 19.48852441, "1981": 19.02290478, "1982": 18.87109791, "1983": 18.99191043, "1984": 19.64780142, "1985": 20.31190163, "1986": 20.61496319, "1987": 21.2500746,   "1988": 22.08513001, "1989": 22.38663748, "1990": 22.7289883,  "1991": 23.18610144, "1992": 22.52817203, "1993": 22.75578699, "1994": 22.9929469,  "1995": 23.53208301, "1996": 24.25816745, "1997": 24.40190571, "1998": 24.30377731, "1999": 24.85372768,
+            "2000": 25.5105528,  "2001": 25.70629345, "2002": 26.27686873, "2003": 27.66948979, "2004": 28.63250593, "2005": 29.6143941,  "2006": 30.6283961,  "2007": 31.53464403, "2008": 32.07419856, "2009": 31.54192194, "2010": 33.35590344, "2011": 34.50453812, "2012": 35.00002034, "2013": 35.30165585, "2014": 35.45009475, "2015": 35.40489697, "2016": 35.41665608, "2017": 35.98989788, "2018": 36.73042656, "2019": 37.10427786, "2020": 35.12652612, "2021": 36.99173628, "2022": 37.29383639, "2023": 37.79156871
         };
 
         // Estimate for 2024 annual emissions (in tonnes)
@@ -622,7 +627,11 @@
             let paginaAtualHistorico = "Marista";
             let intervaloTroca1 = null;
             let intervaloTroca2 = null;
-            let customStartYear = 1990;
+            
+            // Definindo o ano mínimo permitido com base nos dados disponíveis
+            const minAllowedYearForCustomCalc = 1750; // AGORA COMEÇA EM 1750
+            let customStartYear = minAllowedYearForCustomCalc; // Ano padrão inicial definido para o mínimo
+            
             let fixedEmissionsSumForCustomYear = 0;
 
             // Elementos DOM
@@ -784,7 +793,7 @@
                     return;
                 }
                 yearDropdownListElement.innerHTML = '';
-                const minYear = 1750;
+                const minYear = minAllowedYearForCustomCalc; // Usando o mínimo permitido (1750)
                 const maxYear = 2025;
                 for (let year = maxYear; year >= minYear; year--) {
                     const yearItem = document.createElement('div');
@@ -807,6 +816,10 @@
                         if (yearSelectorElement) yearSelectorElement.classList.remove('open');
                     });
                     yearDropdownListElement.appendChild(yearItem);
+                }
+                // Garante que o ano selecionado padrão seja ajustado se estiver fora do novo range
+                if (customStartYear < minYear) {
+                    customStartYear = minYear;
                 }
                 selectedYearDisplayElement.textContent = customStartYear;
             }
@@ -863,8 +876,8 @@
 
                 if (erroAnoElement) erroAnoElement.textContent = "";
 
-                if (isNaN(anoInput) || anoInput < 1750 || anoInput > 2025) {
-                    if (erroAnoElement) erroAnoElement.textContent = "Ano selecionado inválido.";
+                if (isNaN(anoInput) || anoInput < minAllowedYearForCustomCalc || anoInput > 2025) { // Usando o mínimo permitido (1750)
+                    if (erroAnoElement) erroAnoElement.textContent = `Ano selecionado inválido. Selecione entre ${minAllowedYearForCustomCalc} e 2025.`;
                     fixedEmissionsSumForCustomYear = 0;
                     console.log("[Calcular Custom] Validation failed for anoInput from customStartYear.");
                     atualizarEmissoesCustomYear();
@@ -875,7 +888,7 @@
                 for (let year = anoInput; year <= 2023; year++) {
                     const yearStr = year.toString();
                     if (co2EmissionsByYear.hasOwnProperty(yearStr) && typeof co2EmissionsByYear[yearStr] === 'number' && !isNaN(co2EmissionsByYear[yearStr])) {
-                        fixedEmissionsSumForCustomYear += co2EmissionsByYear[yearStr] * 1e9;
+                        fixedEmissionsSumForCustomYear += co2EmissionsByYear[yearStr] * 1e9; // Os dados estão em GtCO2, multiplicamos por 1e9 para toneladas
                     } else {
                         console.warn(`[Calcular Custom] Data for year ${yearStr} problem. Value:`, co2EmissionsByYear[yearStr]);
                     }
@@ -894,7 +907,7 @@
                 if (isNaN(fixedEmissionsSumForCustomYear)) {
                     console.error("[Calcular Custom] CRITICAL: fixedEmissionsSumForCustomYear became NaN.");
                     if (erroAnoElement) erroAnoElement.textContent = "Erro ao calcular dados históricos.";
-                    customStartYear = 1990;
+                    customStartYear = minAllowedYearForCustomCalc; // Redefinir para o mínimo permitido
                     if (selectedYearDisplayElement) selectedYearDisplayElement.textContent = customStartYear;
                     if (yearDropdownListElement) {
                         const oldSel = yearDropdownListElement.querySelector('.selected-item');
@@ -1260,10 +1273,10 @@
             atualizarRelogio();
 
             console.log("Populating year dropdown...");
-            populateYearDropdown();
+            populateYearDropdown(); // Popula o dropdown com o novo range
 
-            console.log("Attempting initial calculation for custom year section with default value (1990)...");
-            aoCalcularAnoCustomizado();
+            console.log("Attempting initial calculation for custom year section with default value (which is now guaranteed to be >= 1750)...");
+            aoCalcularAnoCustomizado(); // Realiza o cálculo inicial com o ano de início corrigido
 
             console.log("Initializing charts...");
             inicializarGraficos();
@@ -1272,7 +1285,7 @@
             setInterval(() => {
                 atualizarEmissoesRegiao();
                 atualizarEmissoesHistorico();
-                atualizarEmissoesCustomYear();
+                atualizarEmissoesCustomYear(); // Mantém a atualização a cada segundo
                 atualizarRelogio();
             }, 1000);
 

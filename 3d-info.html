@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LEDS – 3D Infographic (Layout Fixed)</title>
+    <link rel="icon" type="image/png" href="https://i.ibb.co/N2Dc3q53/logo.png">
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #87CEEB; }
+        canvas { display: block; }
+        .loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.7); color: white; display: flex;
+            justify-content: center; align-items: center;
+            font-family: sans-serif; font-size: 1.5em; z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        .logo-container {
+            position: fixed; bottom: 15px; right: 15px; display: flex;
+            flex-direction: column; gap: 10px; z-index: 100; pointer-events: none;
+        }
+        .logo-img {
+            width: 90px; height: auto; opacity: 0.7; background-color: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(4px); border-radius: 5px; padding: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .nav-arrow {
+            position: fixed; top: 50%; transform: translateY(-50%); width: 40px; height: 60px;
+            background-color: rgba(0, 0, 0, 0.4); color: white; border: none;
+            font-size: 24px; font-weight: bold; display: flex; justify-content: center; align-items: center;
+            cursor: pointer; z-index: 101; border-radius: 5px; transition: background-color 0.2s; user-select: none;
+        }
+        .nav-arrow:hover { background-color: rgba(0, 0, 0, 0.6); }
+        #arrow-left { left: 15px; }
+        #arrow-right { right: 15px; }
+    </style>
+</head>
+<body>
+    <div id="loading" class="loading-overlay">Loading Font...</div>
+    <canvas id="webglCanvas"></canvas>
+    <div id="arrow-left" class="nav-arrow"><</div>
+    <div id="arrow-right" class="nav-arrow">></div>
+    <div class="logo-container">
+        <img class="logo-img logoObs" src="https://i.ibb.co/HfxV4y9b/Logo-Observat-rio-fundo-transparente.png" alt="Logo Observatório Marista">
+        <img class="logo-img logoCop" src="https://i.ibb.co/xbfmWBy/Logo-COP-fundo-transparente.png" alt="Logo COP Colégio Marista Santa Maria">
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+                "@tweenjs/tween.js": "https://unpkg.com/@tweenjs/tween.js@^23/dist/tween.esm.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+        import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+        import TWEEN from '@tweenjs/tween.js';
+
+        // --- Core Setup ---
+        let scene, camera, renderer, controls, clock, raycaster, pointer;
+        let interactiveObjects = []; let selectedRegionObject = null; let selectedHistoryObject = null;
+        let loadedFont = null;
+
+        // --- Constants ---
+        const REGION_PEDESTAL_POS = new THREE.Vector3(0, 0, 0);
+        const HISTORY_PEDESTAL_POS = new THREE.Vector3(-12, 0, -2); // Moved history pedestal further left
+
+        // --- Data Stores & State ---
+        const emissoes = { mundo: { annual: 37.4e9, titulo: "Global CO2 Emissions", legenda: "Estimate 2025: 37.4b tons" }, brasil: { annual: 1.3e9, titulo: "Brazil CO2 Emissions", legenda: "Estimate 2025: 1.3b tons" }, parana: { annual: 62.5e6, titulo: "Parana CO2 Emissions", legenda: "Estimate 2025: 62.5m tons" }, curitiba: { annual: 8.1e6, titulo: "Curitiba CO2 Emissions", legenda: "Estimate 2025: 8.1m tons" } };
+        const emissoesHistorico = { Marista: { titulo: "Since Marista (1817)", baseAte2025: 1848365645658.47, global2025: 37.4e9 }, Santa: { titulo: "Since Santa Maria (1925)", baseAte2025: 1732301526553.08, global2025: 37.4e9 } };
+        let paginaAtualRegiao = "mundo"; let paginaAtualHistorico = "Marista"; let currentFocus = 'region';
+
+        // --- Groups ---
+        let regionPedestalGroup, historyPedestalGroup; let regionDisplayGroup, historyDisplayGroup;
+
+        // --- Text Mesh Refs ---
+        let titleTextMesh, co2TextMesh, descTextMesh, legendTextMesh; let historyTitleTextMesh, historyCo2TextMesh, historyDescTextMesh; let clockTextMesh;
+
+        // --- Materials ---
+        const textMaterial = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.8 }); const legendMaterial = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.8 }); const clockMaterial = new THREE.MeshStandardMaterial({ color: 0x3333AA, roughness: 0.7 });
+
+        // --- Initialization ---
+        function init() {
+            scene = new THREE.Scene(); scene.background = new THREE.Color(0x87CEEB);
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000); camera.position.set(0, 5, 12);
+            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('webglCanvas'), antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight); renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.toneMapping = THREE.LinearToneMapping;
+            clock = new THREE.Clock(); raycaster = new THREE.Raycaster(); pointer = new THREE.Vector2();
+            const ambientLight = new THREE.AmbientLight(0xffffff, 1.0); scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 2.0); directionalLight.position.set(15, 25, 20); directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048; directionalLight.shadow.mapSize.height = 2048; directionalLight.shadow.camera.top = 20; directionalLight.shadow.camera.bottom = -20; directionalLight.shadow.camera.left = -20; directionalLight.shadow.camera.right = 20; directionalLight.shadow.camera.near = 0.5; directionalLight.shadow.camera.far = 80; directionalLight.shadow.bias = -0.001; scene.add(directionalLight);
+            const hemisphereLight = new THREE.HemisphereLight(0xadd8e6, 0x90ee90, 0.6); scene.add(hemisphereLight);
+            controls = new OrbitControls(camera, renderer.domElement); controls.enableDamping = true; controls.dampingFactor = 0.05; controls.target.set(REGION_PEDESTAL_POS.x, 1, REGION_PEDESTAL_POS.z); controls.maxPolarAngle = Math.PI / 2 - 0.05; controls.minDistance = 2; controls.maxDistance = 50;
+
+            // --- Load Font Only (Using Helvetiker from 'dev' branch) ---
+            const fontLoader = new FontLoader();
+            const loadingOverlay = document.getElementById('loading'); // Get ref to overlay
+            loadingOverlay.textContent = 'Loading Font (Helvetiker)...';
+
+            fontLoader.load('https://rawcdn.githack.com/mrdoob/three.js/dev/examples/fonts/helvetiker_regular.typeface.json',
+                (font) => {
+                    console.log("Font loaded!"); loadedFont = font;
+                    createSceneElements();
+                    loadingOverlay.style.display = 'none'; // Hide overlay
+                    animate();
+                },
+                (xhr) => { const p=Math.round(xhr.loaded/xhr.total*100); if(xhr.total>0) loadingOverlay.textContent = `Loading Font: ${p}%`; }, // Update progress
+                (err) => { console.error('Font loading failed:', err); loadingOverlay.textContent = 'Error Loading Font!'; } // Show error
+            );
+
+            window.addEventListener('resize', onWindowResize); window.addEventListener('pointermove', onPointerMove); window.addEventListener('click', onClick);
+            document.getElementById('arrow-left').addEventListener('click', () => switchFocus('left')); document.getElementById('arrow-right').addEventListener('click', () => switchFocus('right'));
+        }
+
+        // --- Create Scene Elements Function ---
+        function createSceneElements() { createGround(); regionPedestalGroup = new THREE.Group(); regionPedestalGroup.position.copy(REGION_PEDESTAL_POS); scene.add(regionPedestalGroup); historyPedestalGroup = new THREE.Group(); historyPedestalGroup.position.copy(HISTORY_PEDESTAL_POS); scene.add(historyPedestalGroup); createPedestal(regionPedestalGroup, 0x90A4AE); createPedestal(historyPedestalGroup, 0xA1887F); regionDisplayGroup = new THREE.Group(); regionDisplayGroup.position.y = 0.15; regionPedestalGroup.add(regionDisplayGroup); historyDisplayGroup = new THREE.Group(); historyDisplayGroup.position.y = 0.15; historyPedestalGroup.add(historyDisplayGroup); createRegionSelectors(regionPedestalGroup); createHistoricalSelectors(historyPedestalGroup); createTextElements(); createBackgroundScenery(); updateRegionDisplay(); updateHistoryDisplay(); updateClockDisplay(); }
+
+        // --- Object Creation Functions ---
+         function createGround() { const g=new THREE.PlaneGeometry(100,100);const m=new THREE.MeshStandardMaterial({color: 4311865,roughness:.9,metalness:0});const p=new THREE.Mesh(g,m);p.rotation.x=-Math.PI/2;p.receiveShadow=true;scene.add(p); }
+         function createPedestal(p,c){const g=new THREE.CylinderGeometry(3.5,3.8,.3,32);const m=new THREE.MeshStandardMaterial({color:c,roughness:.6,metalness:.2});const e=new THREE.Mesh(g,m);e.position.y=.15;e.receiveShadow=true;e.castShadow=true;p.add(e);}
+         function createRegionSelectors(p){const r=4.5,n=4,a=["mundo","brasil","parana","curitiba"],o=[4408053,6732458,16756269,2499128];for(let t=0;t<n;t++){const e=(t/n)*Math.PI*2+Math.PI/4,s=Math.cos(e)*r,i=Math.sin(e)*r,l=new THREE.IcosahedronGeometry(.4,0),c=new THREE.MeshStandardMaterial({color:o[t],roughness:.3,metalness:.1,transparent:true,opacity:.9,emissive:0});const d=new THREE.Mesh(l,c);d.position.set(s,.9,i),d.scale.y=2.5,d.castShadow=true,d.userData={type:"region",page:a[t],originalColor:o[t]},d.name=`selector-region-${a[t]}`,p.add(d),interactiveObjects.push(d),a[t]===paginaAtualRegiao&&selectObject(d)}}
+
+         // --- Modified Historical Selectors ---
+         function createHistoricalSelectors(parentGroup) {
+             const pedestalCenterZ = 0; // Relative Z center of the pedestal group
+             const mushroomOffset = 4.0; // <<-- Increased Horizontal offset SIGNIFICANTLY
+             const mushroomZ = pedestalCenterZ + 1.0; // <<-- Pushed slightly forward relative to center
+
+             const mushroomPages = ['Marista', 'Santa'];
+             const mushroomColors = [0xFF7043, 0x5C6BC0];
+
+             for (let i = 0; i < mushroomPages.length; i++) {
+                 const x = (i === 0) ? -mushroomOffset : mushroomOffset; // Left or Right
+                 const z = mushroomZ;
+
+                 const mushroomGroup = new THREE.Group();
+                 const stemGeo = new THREE.CylinderGeometry(0.08, 0.05, 0.3, 6); const stemMat = new THREE.MeshStandardMaterial({ color: 0xECEFF1, roughness: 0.8 });
+                 const stem = new THREE.Mesh(stemGeo, stemMat); stem.position.y = 0.15; stem.castShadow = true; mushroomGroup.add(stem);
+                 const capGeo = new THREE.SphereGeometry(0.2, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2);
+                 const capMat = new THREE.MeshStandardMaterial({ color: mushroomColors[i], emissive: mushroomColors[i], emissiveIntensity: 0.5, roughness: 0.6 });
+                 const cap = new THREE.Mesh(capGeo, capMat); cap.position.y = 0.3; cap.castShadow = true; mushroomGroup.add(cap);
+
+                 mushroomGroup.position.set(x, 0.01, z); // Position relative to parent group
+                 mushroomGroup.userData = { type: 'history', page: mushroomPages[i], originalColor: mushroomColors[i], emissiveIntensity: 0.5 };
+                 mushroomGroup.name = `selector-history-${mushroomPages[i]}`;
+
+                 parentGroup.add(mushroomGroup);
+                 interactiveObjects.push(mushroomGroup);
+                 if (mushroomPages[i] === paginaAtualHistorico) { selectObject(mushroomGroup); }
+              }
+          }
+         function createBackgroundScenery(){const t=30,e=40;for(let r=0;r<t;r++){const a=new THREE.Group,n=(Math.random()-.5)*e*1.5,o=(Math.random()-.5)*e*1.5;if(Math.sqrt(n*n+o*o)<15)continue;const s=Math.random()*3+4,i=new THREE.CylinderGeometry(.05,Math.random()*.2+.15,s,5),l=new THREE.MeshStandardMaterial({color:5124654,roughness:.9}),c=new THREE.Mesh(i,l);c.position.y=s/2,c.castShadow=true,a.add(c);const d=s*(Math.random()*.5+.8),h=new THREE.ConeGeometry(Math.random()*.8+.8,d,6),m=new THREE.MeshStandardMaterial({color:(new THREE.Color(6856504)).lerp(new THREE.Color(3369246),Math.random()),roughness:.9}),u=new THREE.Mesh(h,m);u.position.y=s-d*.3,u.castShadow=true,a.add(u),a.position.set(n,0,o),a.rotation.y=Math.random()*Math.PI*2;const g=Math.random()*.4+.8;a.scale.set(g,g,g),scene.add(a)}}
+
+        // --- Text Creation & Update Functions ---
+        function createTextElements() { if (!loadedFont) return; titleTextMesh = createTextMeshPlaceholder(); co2TextMesh = createTextMeshPlaceholder(); descTextMesh = createTextMeshPlaceholder(); legendTextMesh = createTextMeshPlaceholder(); historyTitleTextMesh = createTextMeshPlaceholder(); historyCo2TextMesh = createTextMeshPlaceholder(); historyDescTextMesh = createTextMeshPlaceholder(); clockTextMesh = createTextMeshPlaceholder(); regionDisplayGroup.add(titleTextMesh, co2TextMesh, descTextMesh, legendTextMesh); historyDisplayGroup.add(historyTitleTextMesh, historyCo2TextMesh, historyDescTextMesh); scene.add(clockTextMesh); }
+        function createTextMeshPlaceholder() { return new THREE.Group(); }
+        function updateTextMesh(t,e,r,a){if(!loadedFont||!t)return;t.userData.currentMesh&&(t.remove(t.userData.currentMesh),t.userData.currentMesh.geometry.dispose(),t.userData.currentMesh=null);const n=new TextGeometry(e,{font:loadedFont,size:r.size||.5,height:r.height||.05,curveSegments:r.curveSegments||4,bevelEnabled:r.bevelEnabled||false});n.computeBoundingBox();const o=n.boundingBox.max.x-n.boundingBox.min.x,s=n.boundingBox.max.y-n.boundingBox.min.y;let i=0;r.anchorX==="center"?i=-o/2:r.anchorX==="right"&&(i=-o);let l=0;r.anchorY==="middle"?l=-s/2:r.anchorY==="bottom"?l=0:r.anchorY==="top"&&(l=-s),n.translate(i,l,0);const c=new THREE.Mesh(n,a);c.castShadow=false,c.receiveShadow=false,t.add(c),t.userData.currentMesh=c,r.position&&t.position.copy(r.position),r.rotation&&t.rotation.copy(r.rotation)}
+
+        // --- Data Update Functions (Adjusted Text Spacing) ---
+         function updateRegionDisplay(){
+            const data = emissoes[paginaAtualRegiao]; const emitido = calculateCurrentEmissions(data.annual);
+            const descYPos = 1.4; // <<-- Lowered description Y position
+            updateTextMesh(titleTextMesh, data.titulo, {size:.35,height:.03,anchorY:"bottom",anchorX:"center",position:new THREE.Vector3(0,2.7,0)},textMaterial);
+            updateTextMesh(co2TextMesh, formatarNumero(emitido), {size:.8,height:.08,anchorY:"top",anchorX:"center",position:new THREE.Vector3(0,2.4,0)},textMaterial);
+            updateTextMesh(descTextMesh, "tons emitted (2025)", {size:.25,height:.02,anchorY:"top",anchorX:"center",position:new THREE.Vector3(0, descYPos, 0)},textMaterial);
+            updateTextMesh(legendTextMesh, data.legenda, {size:.2,height:.02,anchorY:"top",anchorX:"center",position:new THREE.Vector3(0, descYPos - 0.35, 0)},legendMaterial); // Position legend below description
+        }
+         function updateHistoryDisplay(){
+            const data = emissoesHistorico[paginaAtualHistorico]; const emitido = calculateCurrentHistoryEmissions(data);
+            const descYPos = 1.4; // <<-- Lowered description Y position
+            updateTextMesh(historyTitleTextMesh, data.titulo, {size:.3,height:.03,anchorX:"center",anchorY:"bottom",position:new THREE.Vector3(0,2.5,0)},textMaterial);
+            updateTextMesh(historyCo2TextMesh, formatarNumero(emitido), {size:.5,height:.05,anchorX:"center",anchorY:"top",position:new THREE.Vector3(0,2.1,0)},textMaterial);
+            updateTextMesh(historyDescTextMesh, "tons since foundation", {size:.2,height:.02,anchorX:"center",anchorY:"top",position:new THREE.Vector3(0, descYPos, 0)},textMaterial);
+        }
+        // --- Update Clock Display (Position & Size) ---
+         function updateClockDisplay(){
+            const t=new Date,e=String(t.getHours()).padStart(2,"0"),r=String(t.getMinutes()).padStart(2,"0"),a=String(t.getSeconds()).padStart(2,"0"),n=`${e}:${r}:${a}`;
+            // Calculate midpoint dynamically (could also be fixed if pedestals don't move)
+            const midpointX = (REGION_PEDESTAL_POS.x + HISTORY_PEDESTAL_POS.x) / 2;
+            const midpointZ = (REGION_PEDESTAL_POS.z + HISTORY_PEDESTAL_POS.z) / 2;
+            const clockYPos = 3.0; // Raise the clock
+            const clockZOffset = 2.0; // Bring clock forward slightly
+
+            updateTextMesh(clockTextMesh,n,{
+                size: 0.45, // <<-- Increased size
+                height:.04, anchorX:"center", anchorY:"middle",
+                position: new THREE.Vector3(midpointX, clockYPos, midpointZ + clockZOffset) // <<-- Position between pedestals
+            }, clockMaterial);
+            // Optional: Make clock always face camera?
+            // clockTextMesh.lookAt(camera.position);
+        }
+
+        // --- Calculation Helpers ---
+        function segundosTotaisNoAno(year) { const i=(year%4===0&&year%100!==0)||year%400===0;return(i?366:365)*24*60*60; } function segundosDesdeInicioDoAno(year) { const a=new Date();const t=new Date(2025,0,1);const e=new Date(2026,0,1);if(a<t)return 0;if(a>=e)return segundosTotaisNoAno(2025);return Math.floor((a-t)/1000); } function formatarNumero(numero) { return numero.toLocaleString('en-US', { maximumFractionDigits: 0 }); } function calculateCurrentEmissions(annualAmount) { const y=2025;const s=segundosTotaisNoAno(y);const e=segundosDesdeInicioDoAno(y);if(s===0)return 0;const p=annualAmount/s;return p*e; } function calculateCurrentHistoryEmissions(historyData) { const y=2025;const s=segundosTotaisNoAno(y);const e=segundosDesdeInicioDoAno(y);if(s===0)return historyData.baseAte2025;const p=historyData.global2025/s;const m=p*e;return historyData.baseAte2025+m; }
+
+        // --- Interaction ---
+        function onPointerMove(t){pointer.x=t.clientX/window.innerWidth*2-1,pointer.y=-(t.clientY/window.innerHeight)*2+1} function onClick(t){ pointer.x=t.clientX/window.innerWidth*2-1; pointer.y=-(t.clientY/window.innerHeight)*2+1; raycaster.setFromCamera(pointer,camera); const e=raycaster.intersectObjects(interactiveObjects,true); if(e.length>0){ let r = e[0].object; while (r && interactiveObjects.indexOf(r) === -1) { r = r.parent; } if(r && r.userData && r.userData.type) { handleSelection(r); } } } function handleSelection(t){ const e=t.userData; if(e.type==="region" && e.page !== paginaAtualRegiao){ paginaAtualRegiao=e.page; selectObject(t); } else if(e.type==="history" && e.page !== paginaAtualHistorico){ paginaAtualHistorico=e.page; selectObject(t); } } function selectObject(objectToSelect){ const data = objectToSelect.userData; let currentSelected = data.type === 'region' ? selectedRegionObject : selectedHistoryObject; if (currentSelected && currentSelected !== objectToSelect) { const mat = getMaterialFromObject(currentSelected); if(mat && mat.emissive){ mat.emissive.setHex(currentSelected.userData.originalColor || 0x000000); mat.emissiveIntensity = currentSelected.userData.emissiveIntensity === undefined ? 0 : currentSelected.userData.emissiveIntensity; } } const newMat = getMaterialFromObject(objectToSelect); if (newMat && newMat.emissive) { if(objectToSelect.userData.originalColor === undefined && newMat.color) { objectToSelect.userData.originalColor = newMat.color.getHex(); } if(objectToSelect.userData.emissiveIntensity === undefined) { objectToSelect.userData.emissiveIntensity = newMat.emissiveIntensity; } newMat.emissive.setHex(0xffffff); newMat.emissiveIntensity = 0.8; } if (data.type === 'region') selectedRegionObject = objectToSelect; if (data.type === 'history') selectedHistoryObject = objectToSelect; }
+        function getMaterialFromObject(obj){ if (obj instanceof THREE.Mesh && obj.material) { return obj.material; } if (obj instanceof THREE.Group && obj.userData.type === 'history' && obj.children.length > 0) { const cap = obj.children.find(child => child instanceof THREE.Mesh && child.geometry instanceof THREE.SphereGeometry); if (cap && cap.material) return cap.material; const firstMesh = obj.children.find(child => child instanceof THREE.Mesh && child.material); if (firstMesh) return firstMesh.material; } if (obj instanceof THREE.Group && obj.children.length > 0) { const firstMesh = obj.children.find(child => child instanceof THREE.Mesh && child.material); if (firstMesh) return firstMesh.material; } return null; }
+
+        // --- UI Arrow Interaction & Camera Focus Animation ---
+        let focusTween=null;function switchFocus(t){let e;t==="left"?currentFocus=currentFocus==="region"?"history":"region":currentFocus=currentFocus==="history"?"region":"history",e=currentFocus==="region"?regionPedestalGroup:historyPedestalGroup,animateCameraFocus(e)}function animateCameraFocus(t){const e=new THREE.Vector3;t.getWorldPosition(e),e.y=1;const r=camera.position.clone(),a=controls.target.clone(),n=r.clone().sub(a),o=e.clone().add(n);o.y=Math.max(o.y,1.5);const s=e.clone();focusTween&&focusTween.stop(),focusTween=(new TWEEN.Tween({camX:r.x,camY:r.y,camZ:r.z,targetX:a.x,targetY:a.y,targetZ:a.z})).to({camX:o.x,camY:o.y,camZ:o.z,targetX:s.x,targetY:s.y,targetZ:s.z},1200).easing(TWEEN.Easing.Quadratic.InOut).onUpdate(i=>{camera.position.set(i.camX,i.camY,i.camZ),controls.target.set(i.targetX,i.targetY,i.targetZ)}).onComplete(()=>{controls.target.copy(s),focusTween=null}).start()}
+
+        // --- Event Handlers ---
+        function onWindowResize() { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }
+
+        // --- Animation Loop ---
+        function animate(time) { requestAnimationFrame(animate); const delta = clock.getDelta(); if(loadedFont) { updateRegionDisplay(); updateHistoryDisplay(); updateClockDisplay(); } controls.update(); TWEEN.update(time); interactiveObjects.forEach(obj => { if(obj.userData.type === 'region'){ obj.rotation.y += delta * 0.3; } }); renderer.render(scene, camera); }
+
+        // --- Start Application ---
+        init();
+
+    </script>
+</body>
+</html>

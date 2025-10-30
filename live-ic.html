@@ -92,7 +92,8 @@
   </footer>
 
 <script>
-const ENDPOINT = "https://smart.simcode.com.br/controle.php?acao=Registro&chave=key";
+const ENDPOINT = "https://trackair-live.davimquerino2009.workers.dev";
+
 
 function parseTXT(texto) {
     const blocos = texto.trim().split(/Cod:/).filter(Boolean);
@@ -169,28 +170,19 @@ function criarGrafico(id, label, data, color, labels) {
 }
 
 async function atualizarGraficos() {
-    try {
-        const resposta = await fetch(ENDPOINT);
-        const texto = await resposta.text();
-        const dados = parseTXT(texto);
-        if (!dados || dados.length === 0) return;
-
-        const labels = dados.map(d => d.Data);
-        const temp = dados.map(d => d.Dados.Temperatura);
-        const co2 = dados.map(d => d.Dados.CO2);
-        const pm25 = dados.map(d => d.Dados.PM2_5);
-
-        criarGrafico("graficoTemp", "Temperatura (°C)", temp, "rgba(255,99,132,1)", labels);
-        criarGrafico("graficoCO2", "CO₂ (ppm)", co2, "rgba(0,255,255,1)", labels);
-        criarGrafico("graficoPM25", "PM2.5 (µg/m³)", pm25, "rgba(255,255,0,1)", labels);
-    } catch (erro) {
-        console.error("Erro ao atualizar gráficos:", erro);
-    }
+  try {
+    const res = await fetch(ENDPOINT);
+    const txt = await res.text();
+    const dados = parseTXT(txt); // sua função que transforma texto em dados
+    atualizarPlot(dados);
+  } catch (err) {
+    console.error("Erro ao buscar dados:", err);
+  }
 }
 
-// Atualiza os gráficos a cada 10 segundos
 atualizarGraficos();
 setInterval(atualizarGraficos, 10000);
+
 </script>
 </body>
 </html>

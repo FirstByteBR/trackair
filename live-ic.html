@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TrackAir - Monitoramento Ambiental</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-gradient: linear-gradient(60deg, rgba(23, 13, 194, 1) 0%, rgba(41, 41, 237, 1) 50%, rgba(0, 212, 255, 1) 100%);
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+    color: #fff;
+    background: var(--bg-gradient);
+    background-attachment: fixed;
+    overflow-x: hidden;
+  }
+
+  header {
+    width: 100%;
+    text-align: center;
+    padding: 2rem 0 1rem 0;
+    backdrop-filter: blur(6px);
+  }
+
+  h1 {
+    font-size: 2.3rem;
+    font-weight: 600;
+    text-shadow: 0 0 15px rgba(255,255,255,0.2);
+  }
+
+  main {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    justify-items: center;
+    gap: 40px;
+    padding: 30px;
+  }
+
+  .card {
+    width: 90%;
+    max-width: 600px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    padding: 25px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.5);
+  }
+
+  canvas {
+    width: 100%;
+    height: 280px;
+  }
+
+  footer {
+    text-align: center;
+    font-size: 0.8rem;
+    opacity: 0.7;
+    margin-bottom: 20px;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>TrackAir • Monitoramento Ambiental</h1>
+  </header>
+
+  <main>
+    <div class="card">
+      <canvas id="graficoTemp"></canvas>
+    </div>
+    <div class="card">
+      <canvas id="graficoCO2"></canvas>
+    </div>
+    <div class="card">
+      <canvas id="graficoPM25"></canvas>
+    </div>
+  </main>
+
+  <footer>
+    Atualização automática a cada 10s • Baseado em dados do sensor remoto
+  </footer>
+
+<script>
+const ENDPOINT = "https://smart.simcode.com.br/controle.php?acao=Registro&chave=key";
+
+function parseTXT(texto) {
+    const blocos = texto.trim().split(/Cod:/).filter(Boolean);
+    const dados = blocos.map(b => {
+        const cod = b.match(/(\d+)/)?.[1] || null;
+        const chave = b.match(/Chave:\s*(\S+)/)?.[1] || null;
+        const data = b.match(/Data:\s*([0-9:\-\s]+)/)?.[1] || null;
+        const dadoStr = b.match(/Dado:\s*(.+?)\s*Data:/s)?.[1]?.trim() || "";
+        const dadosMedidos = {};
+        dadoStr.split(";").forEach(par => {
+            const [k, v] = par.split(":");
+            if (k && v) dadosMedidos[k.trim()] = parseFloat(v);
+        });
+        return { Cod: cod, Chave: chave, Data: data, Dados: dadosMedidos };
+    });
+    return dados;
+}
+
+function criarGradiente(ctx, corPrincipal) {
+    const grad = ctx.createLinearGradient(0, 0, 0, 300);
+    grad.addColorStop(0, corPrincipal.replace('1)', '0.4)'));
+    grad.addColorStop(1, corPrincipal.replace('1)', '0)'));
+    return grad;
+}
+
+function criarGrafico(id, label, data, color, labels) {
+    const ctx = document.getElementById(id).getContext("2d");
+    new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: [{
+                label: label,
+                data: data,
+                borderColor: color,
+                backgroundColor: criarGradiente(ctx, color),
+                fill: true,
+                pointRadius: 0,
+                tension: 0.35,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    labels: { color: "#fff", font: { size: 14 } }
+                },
+                tooltip: {
+                    mode: "index",
+                    intersect: false,
+                    backgroundColor: "rgba(0,0,0,0.7)",
+                    titleFont: { size: 13 },
+                    bodyFont: { size: 12 },
+                    cornerRadius: 6
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: "#fff" },
+                    grid: { color: "rgba(255,255,255,0.1)" }
+                },
+                y: {
+                    ticks: { color: "#fff" },
+                    grid: { color: "rgba(255,255,255,0.1)" }
+                }
+            },
+            animation: {
+                duration: 1000,
+                easing: 'easeInOutQuart'
+            }
+        }
+    });
+}
+
+async function atualizarGraficos() {
+    try {
+        const resposta = await fetch(ENDPOINT);
+        const texto = await resposta.text();
+        const dados = parseTXT(texto);
+        if (!dados || dados.length === 0) return;
+
+        const labels = dados.map(d => d.Data);
+        const temp = dados.map(d => d.Dados.Temperatura);
+        const co2 = dados.map(d => d.Dados.CO2);
+        const pm25 = dados.map(d => d.Dados.PM2_5);
+
+        criarGrafico("graficoTemp", "Temperatura (°C)", temp, "rgba(255,99,132,1)", labels);
+        criarGrafico("graficoCO2", "CO₂ (ppm)", co2, "rgba(0,255,255,1)", labels);
+        criarGrafico("graficoPM25", "PM2.5 (µg/m³)", pm25, "rgba(255,255,0,1)", labels);
+    } catch (erro) {
+        console.error("Erro ao atualizar gráficos:", erro);
+    }
+}
+
+// Atualiza os gráficos a cada 10 segundos
+atualizarGraficos();
+setInterval(atualizarGraficos, 10000);
+</script>
+</body>
+</html>

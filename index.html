@@ -332,7 +332,9 @@
         .logoObs { width: 300px; height: auto; }
         .logoCop { width: 300px; height: auto; }
         .logoNew { width: 400px; height: auto; }
-
+        .qrcode{
+            display:block;
+        }
         /* Agro Input Styles */
         .agro-input-container {
             display: flex;
@@ -437,6 +439,7 @@
             .logo-container-lefty { left: 10px; }
             .logoObs, .logoCop, .logoNew { width: 130px; }
             .charts-container { flex-direction: column; }
+            .qrcode {size:0pt}
         }
 
         @media (max-width: 480px) {
@@ -455,6 +458,7 @@
             .logo-container, .logo-container-lefty { position: static; transform: none; flex-direction: row; justify-content: center; width: 100%; margin-bottom: 15px; padding: 0 10px; }
             .logoObs, .logoCop, .logoNew { width: 70px; padding: 5px; }
             .logo-container > .logo-img, .logo-container-lefty > .logo-img { margin: 0 5px; }
+            .qrcode {size:0pt}
         }
     </style>
 </head>

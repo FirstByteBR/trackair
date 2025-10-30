@@ -169,22 +169,72 @@ function criarGrafico(id, label, data, color, labels) {
     });
 }
 
-function atualizarPlot(chart, dados, label, cor) {
-  const labels = dados.map(d => d.Data);
-  const valores = dados.map(d => d.Dados[label]);
+function atualizarPlot(dados) {
+  try {
+    if (!Array.isArray(dados) || dados.length === 0) {
+      console.warn("atualizarPlot: dados vazios ou inválidos");
+      return;
+    }
 
-  chart.data.labels = labels;
-  chart.data.datasets = [{
-    label: label.toUpperCase(),
-    data: valores,
-    borderColor: cor,
-    backgroundColor: cor.replace('1)', '0.3)').replace('rgb', 'rgba'),
-    fill: true,
-    pointRadius: 0,
-    tension: 0.3
-  }];
-  chart.update();
+    // labels e séries protegidas (converte valores inválidos em null)
+    const labels = dados.map(d => d.Data ?? "");
+    const temps = dados.map(d => {
+      const v = d?.Dados?.Temperatura;
+      return Number.isFinite(v) ? v : null;
+    });
+    const co2s = dados.map(d => {
+      const v = d?.Dados?.CO2;
+      return Number.isFinite(v) ? v : null;
+    });
+    const pm25s = dados.map(d => {
+      const v = d?.Dados?.PM2_5;
+      return Number.isFinite(v) ? v : null;
+    });
+
+    // checa existência dos charts (deveriam ser globais: charts.temp, charts.co2, charts.pm25)
+    if (!window.charts || !charts.temp || !charts.co2 || !charts.pm25) {
+      console.error("atualizarPlot: objetos charts não inicializados");
+      return;
+    }
+
+    // função auxiliar para recriar gradiente seguro
+    function grad(ctx, colorRGBA) {
+      if (!ctx || !ctx.canvas) return colorRGBA;
+      const g = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height || 300);
+      const a35 = colorRGBA.replace(/, *1\)/, ", 0.35)");
+      const a0  = colorRGBA.replace(/, *1\)/, ", 0)");
+      g.addColorStop(0, a35);
+      g.addColorStop(1, a0);
+      return g;
+    }
+
+    // Atualiza Temperatura
+    const chT = charts.temp;
+    chT.data.labels = labels;
+    chT.data.datasets[0].data = temps;
+    // atualiza gradiente de fundo (recria com o canvas atual)
+    chT.data.datasets[0].backgroundColor = grad(chT.ctx, "rgba(255,99,132,1)");
+    // Atualiza CO2
+    const chC = charts.co2;
+    chC.data.labels = labels;
+    chC.data.datasets[0].data = co2s;
+    chC.data.datasets[0].backgroundColor = grad(chC.ctx, "rgba(0,255,255,1)");
+    // Atualiza PM2.5
+    const chP = charts.pm25;
+    chP.data.labels = labels;
+    chP.data.datasets[0].data = pm25s;
+    chP.data.datasets[0].backgroundColor = grad(chP.ctx, "rgba(255,205,86,1)");
+
+    // chama update em cada chart (com animação curta)
+    chT.update();
+    chC.update();
+    chP.update();
+
+  } catch (err) {
+    console.error("atualizarPlot: exceção ao atualizar gráficos:", err);
+  }
 }
+
 
 async function atualizarGraficos() {
   try {

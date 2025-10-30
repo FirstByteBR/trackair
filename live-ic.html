@@ -169,6 +169,23 @@ function criarGrafico(id, label, data, color, labels) {
     });
 }
 
+function atualizarPlot(chart, dados, label, cor) {
+  const labels = dados.map(d => d.Data);
+  const valores = dados.map(d => d.Dados[label]);
+
+  chart.data.labels = labels;
+  chart.data.datasets = [{
+    label: label.toUpperCase(),
+    data: valores,
+    borderColor: cor,
+    backgroundColor: cor.replace('1)', '0.3)').replace('rgb', 'rgba'),
+    fill: true,
+    pointRadius: 0,
+    tension: 0.3
+  }];
+  chart.update();
+}
+
 async function atualizarGraficos() {
   try {
     const res = await fetch(ENDPOINT);

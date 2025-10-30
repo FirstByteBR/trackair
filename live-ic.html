@@ -77,13 +77,13 @@
 
   <main>
     <div class="card">
-      <canvas id="graficoTemp"></canvas>
+      <canvas id="chartTemp"></canvas>
     </div>
     <div class="card">
-      <canvas id="graficoCO2"></canvas>
+      <canvas id="chartCO2"></canvas>
     </div>
     <div class="card">
-      <canvas id="graficoPM25"></canvas>
+      <canvas id="chartPM25"></canvas>
     </div>
   </main>
 
@@ -93,7 +93,6 @@
 
 <script>
 const ENDPOINT = "https://trackair-live.davimquerino2009.workers.dev";
-
 
 function parseTXT(texto) {
     const blocos = texto.trim().split(/Cod:/).filter(Boolean);
@@ -112,144 +111,236 @@ function parseTXT(texto) {
     return dados;
 }
 
-function criarGradiente(ctx, corPrincipal) {
-    const grad = ctx.createLinearGradient(0, 0, 0, 300);
-    grad.addColorStop(0, corPrincipal.replace('1)', '0.4)'));
-    grad.addColorStop(1, corPrincipal.replace('1)', '0)'));
-    return grad;
+let charts = {};
+let lastLabels = [];
+
+function initCharts() {
+  const ctxTemp = document.getElementById("chartTemp")?.getContext("2d");
+  const ctxCO2 = document.getElementById("chartCO2")?.getContext("2d");
+  const ctxPM25 = document.getElementById("chartPM25")?.getContext("2d");
+
+  charts.temp = new Chart(ctxTemp, {
+    type: "line",
+    data: { 
+      labels: [], 
+      datasets: [{ 
+        label: "Temperatura (°C)", 
+        data: [],
+        borderColor: "rgba(255, 99, 132, 1)",
+        backgroundColor: "rgba(255, 99, 132, 0.1)",
+        fill: true,
+        pointRadius: 0, // Removido os pontos
+        tension: 0.35,
+        borderWidth: 2
+      }] 
+    },
+    options: { 
+      responsive: true,
+      animation: false,
+      plugins: {
+        legend: {
+          labels: { color: "#fff", font: { size: 14 } }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { 
+            color: "#fff",
+            maxTicksLimit: 6, // Limita número de timestamps
+            callback: function(value, index, values) {
+              // Mostra apenas alguns timestamps para não poluir
+              if (index === 0 || index === values.length - 1 || index % Math.ceil(values.length / 5) === 0) {
+                return this.getLabelForValue(value);
+              }
+              return '';
+            }
+          },
+          grid: { color: "rgba(255,255,255,0.1)" }
+        },
+        y: {
+          ticks: { color: "#fff" },
+          grid: { color: "rgba(255,255,255,0.1)" },
+          beginAtZero: false
+        }
+      }
+    }
+  });
+
+  charts.co2 = new Chart(ctxCO2, {
+    type: "line",
+    data: { 
+      labels: [], 
+      datasets: [{ 
+        label: "CO₂ (ppm)", 
+        data: [],
+        borderColor: "rgba(54, 162, 235, 1)",
+        backgroundColor: "rgba(54, 162, 235, 0.1)",
+        fill: true,
+        pointRadius: 0, // Removido os pontos
+        tension: 0.35,
+        borderWidth: 2
+      }] 
+    },
+    options: { 
+      responsive: true,
+      animation: false,
+      plugins: {
+        legend: {
+          labels: { color: "#fff", font: { size: 14 } }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { 
+            color: "#fff",
+            maxTicksLimit: 6,
+            callback: function(value, index, values) {
+              if (index === 0 || index === values.length - 1 || index % Math.ceil(values.length / 5) === 0) {
+                return this.getLabelForValue(value);
+              }
+              return '';
+            }
+          },
+          grid: { color: "rgba(255,255,255,0.1)" }
+        },
+        y: {
+          ticks: { color: "#fff" },
+          grid: { color: "rgba(255,255,255,0.1)" },
+          beginAtZero: false
+        }
+      }
+    }
+  });
+
+  charts.pm25 = new Chart(ctxPM25, {
+    type: "line",
+    data: { 
+      labels: [], 
+      datasets: [{ 
+        label: "PM2.5 (µg/m³)", 
+        data: [],
+        borderColor: "rgba(75, 192, 192, 1)",
+        backgroundColor: "rgba(75, 192, 192, 0.1)",
+        fill: true,
+        pointRadius: 0, // Removido os pontos
+        tension: 0.35,
+        borderWidth: 2
+      }] 
+    },
+    options: { 
+      responsive: true,
+      animation: false,
+      plugins: {
+        legend: {
+          labels: { color: "#fff", font: { size: 14 } }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { 
+            color: "#fff",
+            maxTicksLimit: 6,
+            callback: function(value, index, values) {
+              if (index === 0 || index === values.length - 1 || index % Math.ceil(values.length / 5) === 0) {
+                return this.getLabelForValue(value);
+              }
+              return '';
+            }
+          },
+          grid: { color: "rgba(255,255,255,0.1)" }
+        },
+        y: {
+          ticks: { color: "#fff" },
+          grid: { color: "rgba(255,255,255,0.1)" },
+          beginAtZero: false
+        }
+      }
+    }
+  });
 }
 
-function criarGrafico(id, label, data, color, labels) {
-    const ctx = document.getElementById(id).getContext("2d");
-    new Chart(ctx, {
-        type: "line",
-        data: {
-            labels: labels,
-            datasets: [{
-                label: label,
-                data: data,
-                borderColor: color,
-                backgroundColor: criarGradiente(ctx, color),
-                fill: true,
-                pointRadius: 0,
-                tension: 0.35,
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    labels: { color: "#fff", font: { size: 14 } }
-                },
-                tooltip: {
-                    mode: "index",
-                    intersect: false,
-                    backgroundColor: "rgba(0,0,0,0.7)",
-                    titleFont: { size: 13 },
-                    bodyFont: { size: 12 },
-                    cornerRadius: 6
-                }
-            },
-            scales: {
-                x: {
-                    ticks: { color: "#fff" },
-                    grid: { color: "rgba(255,255,255,0.1)" }
-                },
-                y: {
-                    ticks: { color: "#fff" },
-                    grid: { color: "rgba(255,255,255,0.1)" }
-                }
-            },
-            animation: {
-                duration: 1000,
-                easing: 'easeInOutQuart'
-            }
-        }
+function formatarTimestamp(dataString) {
+  if (!dataString) return '';
+  
+  try {
+    const date = new Date(dataString);
+    // Formata como HH:MM (apenas hora e minuto)
+    return date.toLocaleTimeString('pt-BR', { 
+      hour: '2-digit', 
+      minute: '2-digit'
     });
+  } catch (e) {
+    return dataString; // Fallback para o formato original se der erro
+  }
 }
 
 function atualizarPlot(dados) {
-  try {
-    if (!Array.isArray(dados) || dados.length === 0) {
-      console.warn("atualizarPlot: dados vazios ou inválidos");
-      return;
-    }
-
-    // labels e séries protegidas (converte valores inválidos em null)
-    const labels = dados.map(d => d.Data ?? "");
-    const temps = dados.map(d => {
-      const v = d?.Dados?.Temperatura;
-      return Number.isFinite(v) ? v : null;
-    });
-    const co2s = dados.map(d => {
-      const v = d?.Dados?.CO2;
-      return Number.isFinite(v) ? v : null;
-    });
-    const pm25s = dados.map(d => {
-      const v = d?.Dados?.PM2_5;
-      return Number.isFinite(v) ? v : null;
-    });
-
-    // checa existência dos charts (deveriam ser globais: charts.temp, charts.co2, charts.pm25)
-    if (!window.charts || !charts.temp || !charts.co2 || !charts.pm25) {
-      console.error("atualizarPlot: objetos charts não inicializados");
-      return;
-    }
-
-    // função auxiliar para recriar gradiente seguro
-    function grad(ctx, colorRGBA) {
-      if (!ctx || !ctx.canvas) return colorRGBA;
-      const g = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height || 300);
-      const a35 = colorRGBA.replace(/, *1\)/, ", 0.35)");
-      const a0  = colorRGBA.replace(/, *1\)/, ", 0)");
-      g.addColorStop(0, a35);
-      g.addColorStop(1, a0);
-      return g;
-    }
-
-    // Atualiza Temperatura
-    const chT = charts.temp;
-    chT.data.labels = labels;
-    chT.data.datasets[0].data = temps;
-    // atualiza gradiente de fundo (recria com o canvas atual)
-    chT.data.datasets[0].backgroundColor = grad(chT.ctx, "rgba(255,99,132,1)");
-    // Atualiza CO2
-    const chC = charts.co2;
-    chC.data.labels = labels;
-    chC.data.datasets[0].data = co2s;
-    chC.data.datasets[0].backgroundColor = grad(chC.ctx, "rgba(0,255,255,1)");
-    // Atualiza PM2.5
-    const chP = charts.pm25;
-    chP.data.labels = labels;
-    chP.data.datasets[0].data = pm25s;
-    chP.data.datasets[0].backgroundColor = grad(chP.ctx, "rgba(255,205,86,1)");
-
-    // chama update em cada chart (com animação curta)
-    chT.update();
-    chC.update();
-    chP.update();
-
-  } catch (err) {
-    console.error("atualizarPlot: exceção ao atualizar gráficos:", err);
+  if (!charts.temp || !charts.co2 || !charts.pm25) {
+    console.warn("atualizarPlot: objetos charts não inicializados");
+    return;
   }
-}
 
+  // Usar timestamps formatados (apenas hora e minuto)
+  const labels = dados.map(item => formatarTimestamp(item.Data));
+  
+  // Extrair os dados corretamente
+  const tempData = dados.map(item => {
+    const dados = item.Dados || {};
+    return dados.Temperatura || dados.temp || dados.TEMP || 0;
+  });
+  
+  const co2Data = dados.map(item => {
+    const dados = item.Dados || {};
+    return dados.CO2 || dados.co2 || dados.CO2 || 0;
+  });
+  
+  const pm25Data = dados.map(item => {
+    const dados = item.Dados || {};
+    return dados.PM25 || dados.pm25 || dados['PM2_5'] || dados.pm2_5 || 0;
+  });
+
+  console.log("Dados processados:", { tempData, co2Data, pm25Data, labels });
+
+  // Atualizar apenas se os labels mudaram significativamente
+  const shouldUpdateLabels = JSON.stringify(labels) !== JSON.stringify(lastLabels);
+  
+  if (shouldUpdateLabels) {
+    charts.temp.data.labels = labels;
+    charts.co2.data.labels = labels;
+    charts.pm25.data.labels = labels;
+    lastLabels = labels;
+  }
+
+  charts.temp.data.datasets[0].data = tempData;
+  charts.co2.data.datasets[0].data = co2Data;
+  charts.pm25.data.datasets[0].data = pm25Data;
+
+  charts.temp.update('none');
+  charts.co2.update('none');
+  charts.pm25.update('none');
+}
 
 async function atualizarGraficos() {
   try {
-    const res = await fetch(ENDPOINT);
-    const txt = await res.text();
-    const dados = parseTXT(txt); // sua função que transforma texto em dados
-    atualizarPlot(dados);
-  } catch (err) {
-    console.error("Erro ao buscar dados:", err);
+    const resp = await fetch("https://trackair-live.davimquerino2009.workers.dev/");
+    const texto = await resp.text();
+    console.log("Resposta da API:", texto);
+    
+    const dadosParseados = parseTXT(texto);
+    console.log("Dados parseados:", dadosParseados);
+    
+    atualizarPlot(dadosParseados);
+  } catch (e) {
+    console.error("Erro ao buscar dados:", e);
   }
 }
 
-atualizarGraficos();
-setInterval(atualizarGraficos, 10000);
-
+// Inicialização garantida após DOM carregar
+document.addEventListener("DOMContentLoaded", () => {
+  initCharts();
+  atualizarGraficos();
+  setInterval(atualizarGraficos, 10000);
+});
 </script>
 </body>
 </html>

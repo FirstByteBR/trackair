@@ -3,234 +3,334 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>LEDS – Infográfico Responsivo</title>
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="https://i.ibb.co/N2Dc3q53/logo.png">
-    <!-- Google Fonts -->
+    <title>Track.air</title>
+    <link rel="icon" type="image/png" href="https://i.ibb.co/kVWV8Ssw/trackair-kw.jpg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;900&family=Segoe+UI:wght@400;700&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rubik:wght@700;900&display=swap" rel="stylesheet">
 
     <style>
+        /* ── Design Tokens ─────────────────────────────────────────── */
         :root {
-            --text-color: white;
-            --bg-gradient: linear-gradient(60deg, rgba(23, 13, 194, 1) 0%, rgba(41, 41, 237, 1) 50%, rgba(0, 212, 255, 1) 100%);
-            --header-bg: rgba(0, 0, 0, 0.65);
-            --section-bg: rgba(255, 255, 255, 0.1);
-            --section-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-            --button-bg: rgba(255, 255, 255, 0.2);
-            --button-bg-hover: rgba(255, 255, 255, 0.35);
-            --button-bg-active: rgba(255, 255, 255, 0.6);
-            --button-radius: 10px;
-            --section-radius: 20px;
-            --widget-bg: rgba(255, 255, 255, 0.1);
-            --widget-bg-hover: rgba(255, 255, 255, 0.2);
-            --widget-radius: 8px;
+            --clr-bg-start:   #0d0b2e;
+            --clr-bg-mid:     #1a1aee;
+            --clr-bg-end:     #00c8f0;
+            --clr-text:       #ffffff;
+            --clr-text-muted: rgba(255,255,255,0.65);
+            --clr-accent:     #00d4ff;
+            --clr-card-bg:    rgba(255,255,255,0.08);
+            --clr-card-border:rgba(255,255,255,0.12);
+            --clr-btn-bg:     rgba(255,255,255,0.15);
+            --clr-btn-hover:  rgba(255,255,255,0.28);
+            --clr-btn-active: rgba(255,255,255,0.60);
+            --clr-input-bg:   rgba(0,0,0,0.35);
+            --clr-header-bg:  rgba(8,6,40,0.75);
 
-            --font-primary: 'Segoe UI', sans-serif;
+            --radius-sm:  8px;
+            --radius-md:  14px;
+            --radius-lg:  22px;
+
+            --shadow-card: 0 8px 32px rgba(0,0,0,0.35);
+            --shadow-btn:  0 2px 8px  rgba(0,0,0,0.20);
+
+            --font-body:    'Inter', system-ui, sans-serif;
             --font-display: 'Rubik', sans-serif;
 
-            --header-height: 70px;
+            --header-h: 68px;
+            --max-w:    860px;
         }
 
-        *, *::before, *::after {
-            box-sizing: border-box;
-        }
+        /* ── Reset & Base ──────────────────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: var(--font-primary);
-            color: var(--text-color);
-            margin: 0;
-            padding: 0;
-            padding-top: var(--header-height);
-            text-align: center;
-            background-image: var(--bg-gradient);
+            font-family: var(--font-body);
+            color: var(--clr-text);
+            background: linear-gradient(135deg,
+                var(--clr-bg-start) 0%,
+                var(--clr-bg-mid)   55%,
+                var(--clr-bg-end)   100%);
             background-attachment: fixed;
             min-height: 100vh;
+            padding-top: var(--header-h);
         }
 
+        /* ── Header ────────────────────────────────────────────────── */
         header {
-            background-color: var(--header-bg);
-            padding: 15px 20px;
-            font-size: 1.8rem;
-            font-weight: bold;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 1000;
+            inset: 0 0 auto 0;
+            height: var(--header-h);
+            background: var(--clr-header-bg);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 2px 16px rgba(0,0,0,0.4);
             display: flex;
-            justify-content: center;
             align-items: center;
-            min-height: var(--header-height);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .header-logo {
+            font-family: var(--font-display);
+            font-size: 1.75rem;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            color: var(--clr-text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-logo span.dot {
+            color: var(--clr-accent);
         }
 
         #relogio {
             position: absolute;
+            right: 20px;
             top: 50%;
             transform: translateY(-50%);
-            right: 20px;
-            font-size: 1.4rem;
             font-family: var(--font-display);
-            background-color: var(--widget-bg);
-            padding: 6px 12px;
-            border-radius: var(--widget-radius);
-            color: var(--text-color);
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: rgba(255,255,255,0.10);
+            border: 1px solid rgba(255,255,255,0.15);
+            padding: 5px 13px;
+            border-radius: var(--radius-sm);
+            letter-spacing: 1px;
         }
 
+        /* ── Main Layout ───────────────────────────────────────────── */
         main {
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 30px 20px;
-            gap: 30px;
+            padding: 36px 20px 60px;
+            gap: 24px;
         }
 
-        section {
-            background-color: var(--section-bg);
-            border-radius: var(--section-radius);
-            padding: 30px;
-            max-width: 900px;
-            width: 95%;
-            box-shadow: var(--section-shadow);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        /* ── Cards ─────────────────────────────────────────────────── */
+        .card {
+            background: var(--clr-card-bg);
+            border: 1px solid var(--clr-card-border);
+            border-radius: var(--radius-lg);
+            padding: 32px 36px;
+            max-width: var(--max-w);
+            width: 100%;
+            box-shadow: var(--shadow-card);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
 
-        .subtitulo {
-            color: white;
-            font-size: 1.6rem;
-            font-weight: bold;
+        /* ── Navigation Card ───────────────────────────────────────── */
+        .nav-card {
             display: flex;
-            align-items: center;
             justify-content: center;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .numero-co2, .numero-co2s {
-            font-family: var(--font-display);
-            font-size: 3.5rem;
-            color: var(--text-color);
-            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
-            margin: 15px 0;
-            display: inline-block;
-            line-height: 1.1;
-            font-weight: 900;
-        }
-
-        .numero-co2s {
-            font-size: 2.5rem;
-        }
-
-        .descricao {
-            color: white;
-            font-size: 1.3rem;
-            margin-top: 0;
-            margin-bottom: 10px;
-            min-height: 1.5em;
-        }
-
-        .legenda {
-            font-size: 1rem;
-            opacity: 0.85;
-            margin-top: 15px;
-        }
-        /* Ajuste de cor para hiperlinks dentro de .legenda */
-        .legenda a {
-            color: #00d4ff; /* Azul claro */
-            text-decoration: none; /* Remover sublinhado padrão */
-        }
-
-        .legenda a:hover {
-            text-decoration: underline; /* Adicionar sublinhado ao passar o mouse */
-        }
-
-        .botoes {
-            margin-top: 25px;
-            display: flex;
+            gap: 14px;
             flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
+            padding: 20px 28px;
         }
 
-        .botao {
-            background: var(--button-bg);
-            color: var(--text-color);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 10px 18px;
+        .nav-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--clr-btn-bg);
+            color: var(--clr-text);
+            border: 1px solid rgba(255,255,255,0.18);
+            padding: 11px 22px;
+            border-radius: var(--radius-md);
+            font-family: var(--font-body);
             font-size: 0.95rem;
-            border-radius: var(--button-radius);
+            font-weight: 600;
+            text-decoration: none;
             cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.3s, transform 0.2s;
-            font-family: var(--font-primary);
+            transition: background 0.25s, transform 0.2s, box-shadow 0.25s;
+            box-shadow: var(--shadow-btn);
         }
 
-        .botao:hover {
-            background: var(--button-bg-hover);
-            transform: scale(1.05);
+        .nav-link:hover {
+            background: var(--clr-btn-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.3);
         }
 
-        .botao.ativo {
-            background: var(--button-bg-active);
-            color: #1a1a1a;
-            font-weight: 700;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        .nav-link svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
         }
 
-        /* Year Selector */
-        .year-selector-container {
+        /* ── Section Header ────────────────────────────────────────── */
+        .section-label {
             display: flex;
-            justify-content: center;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--clr-accent);
+            margin-bottom: 6px;
         }
 
-        .year-selector-label {
+        .section-label::before,
+        .section-label::after {
+            content: '';
+            flex: 1;
+            max-width: 60px;
+            height: 1px;
+            background: var(--clr-accent);
+            opacity: 0.4;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--clr-text);
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        /* ── Big Counter ───────────────────────────────────────────── */
+        .counter-wrap {
+            margin: 8px 0 4px;
+        }
+
+        .counter-value {
+            font-family: var(--font-display);
+            font-weight: 900;
+            font-size: 3.6rem;
+            line-height: 1.05;
+            color: var(--clr-text);
+            text-shadow: 0 4px 16px rgba(0,0,0,0.35);
+            display: block;
+        }
+
+        .counter-value.sm {
+            font-size: 2.6rem;
+        }
+
+        .counter-value.md {
+            font-size: 2.9rem;
+        }
+
+        .counter-unit {
             font-size: 1.1rem;
-            color: var(--text-color);
-            opacity: 0.9;
+            color: var(--clr-text-muted);
+            margin-top: 6px;
+            display: block;
+        }
+
+        .counter-note {
+            font-size: 0.88rem;
+            color: var(--clr-text-muted);
+            margin-top: 14px;
+        }
+
+        .counter-note a {
+            color: var(--clr-accent);
+            text-decoration: none;
+        }
+
+        .counter-note a:hover {
+            text-decoration: underline;
+        }
+
+        /* ── Divider ───────────────────────────────────────────────── */
+        .divider {
+            height: 1px;
+            background: rgba(255,255,255,0.10);
+            margin: 22px 0;
+        }
+
+        /* ── Button Group ──────────────────────────────────────────── */
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        .btn {
+            background: var(--clr-btn-bg);
+            color: var(--clr-text);
+            border: 1px solid rgba(255,255,255,0.18);
+            padding: 9px 20px;
+            font-size: 0.9rem;
+            font-family: var(--font-body);
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: background 0.25s, transform 0.2s, box-shadow 0.25s;
+            box-shadow: var(--shadow-btn);
+        }
+
+        .btn:hover {
+            background: var(--clr-btn-hover);
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 5px 14px rgba(0,0,0,0.25);
+        }
+
+        .btn.active {
+            background: var(--clr-btn-active);
+            color: #0d0b2e;
+            font-weight: 700;
+            box-shadow: 0 0 14px rgba(255,255,255,0.25);
+        }
+
+        /* ── Year Selector ─────────────────────────────────────────── */
+        .year-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 22px;
+        }
+
+        .year-row-label {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--clr-text-muted);
         }
 
         .year-selector {
             position: relative;
             min-width: 120px;
-            background-color: var(--button-bg);
-            color: var(--text-color);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: var(--button-radius);
-            padding: 10px 15px;
+            background: var(--clr-btn-bg);
+            color: var(--clr-text);
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: var(--radius-md);
+            padding: 9px 14px;
             cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s ease;
+            font-weight: 700;
+            font-family: var(--font-display);
+            font-size: 1rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            gap: 8px;
+            transition: background 0.25s, transform 0.2s, box-shadow 0.25s;
+            box-shadow: var(--shadow-btn);
         }
 
-        .year-selector:hover, .year-selector:focus-within {
-            background-color: var(--button-bg-hover);
-            transform: translateY(-2px) scale(1.03);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            border-color: rgba(255, 255, 255, 0.4);
-        }
-
-        .selected-year {
-            font-family: var(--font-display);
-            font-size: 1.1rem;
+        .year-selector:hover,
+        .year-selector:focus-within {
+            background: var(--clr-btn-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 14px rgba(0,0,0,0.25);
+            border-color: rgba(255,255,255,0.35);
         }
 
         .dropdown-arrow {
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
             transition: transform 0.3s ease;
-            stroke: var(--text-color);
+            flex-shrink: 0;
         }
 
         .year-selector.open .dropdown-arrow {
@@ -239,38 +339,27 @@
 
         .year-dropdown {
             position: absolute;
-            top: calc(100% + 8px);
+            top: calc(100% + 6px);
             left: 0;
             width: 100%;
-            background-color: rgba(0,0,0,0.8);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            border-radius: var(--button-radius);
+            background: rgba(10,8,50,0.92);
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: var(--radius-md);
             max-height: 0;
             overflow-y: auto;
-            z-index: 10;
+            z-index: 20;
             opacity: 0;
-            transform: translateY(10px) scaleY(0.95);
+            transform: translateY(8px) scaleY(0.95);
             transform-origin: top center;
-            transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out, transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
-            padding: 5px 0;
+            transition: max-height 0.35s ease, opacity 0.25s ease, transform 0.35s cubic-bezier(0.23,1,0.32,1);
+            box-shadow: 0 10px 24px rgba(0,0,0,0.4);
+            padding: 4px 0;
         }
 
-        .year-dropdown::-webkit-scrollbar {
-            width: 8px;
-        }
-        .year-dropdown::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.1);
-            border-radius: 10px;
-        }
-        .year-dropdown::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.3);
-            border-radius: 10px;
-            transition: background 0.2s ease;
-        }
-        .year-dropdown::-webkit-scrollbar-thumb:hover {
-            background: rgba(255,255,255,0.5);
-        }
+        .year-dropdown::-webkit-scrollbar { width: 6px; }
+        .year-dropdown::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
+        .year-dropdown::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.25); border-radius: 10px; }
+        .year-dropdown::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.45); }
 
         .year-selector.open .year-dropdown {
             max-height: 200px;
@@ -279,1031 +368,574 @@
         }
 
         .year-dropdown div {
-            padding: 10px 15px;
-            color: var(--text-color);
+            padding: 9px 14px;
+            color: var(--clr-text);
             cursor: pointer;
-            transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
+            transition: background 0.2s, transform 0.15s;
         }
 
         .year-dropdown div:hover {
-            background-color: var(--button-bg-hover);
+            background: var(--clr-btn-hover);
             transform: translateX(3px);
         }
+
         .year-dropdown div.selected-item {
-            background-color: var(--button-bg-active);
-            color: #1a1a1a;
-            font-weight: bold;
+            background: var(--clr-btn-active);
+            color: #0d0b2e;
+            font-weight: 700;
         }
 
-        /* Logo Styles */
-        .logo-container {
-            position: fixed;
-            top: calc(var(--header-height) + 15px);
-            right: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 10px;
-            z-index: 100;
-        }
-        .logo-container-lefty {
-            position: fixed;
-            top: calc(var(--header-height) + 15px);
-            left: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 10px;
-            z-index: 100;
+        .error-msg {
+            color: #ffb3b3;
+            font-size: 0.9rem;
+            font-weight: 600;
+            min-height: 1.2em;
+            margin-top: 10px;
         }
 
-        .logo-img {
-            display: block;
-            backdrop-filter: blur(6px);
-            border-radius: var(--widget-radius);
-            padding: 8px;
-            background-color: rgba(255, 255, 255, 0.65);
-            max-width: 100%;
-            object-fit: contain;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .logoObs { width: 300px; height: auto; }
-        .logoCop { width: 300px; height: auto; }
-        .logoNew { width: 400px; height: auto; }
-        .qrcode{
-            display:block;
-        }
-        /* Agro Input Styles */
-        .agro-input-container {
+        /* ── Agro Calculator ───────────────────────────────────────── */
+        .form-grid {
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            margin-bottom: 20px;
+            gap: 14px;
+            margin-bottom: 22px;
             text-align: left;
         }
 
-        .agro-input-group {
-            display: flex; /* Default to flex, will be overridden to none for hidden fields */
+        .form-group {
+            display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 6px;
         }
 
-        .agro-input-group label {
-            font-weight: bold;
-            font-size: 1.1rem;
-            color: white;
+        .form-group label {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--clr-text-muted);
+            letter-spacing: 0.3px;
         }
 
-        .agro-input {
-            background-color: rgba(0, 0, 0, 0.4);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: var(--button-radius);
-            padding: 12px 15px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
+        .form-input {
+            background: var(--clr-input-bg);
+            color: var(--clr-text);
+            border: 1px solid rgba(255,255,255,0.22);
+            border-radius: var(--radius-sm);
+            padding: 11px 14px;
+            font-size: 0.95rem;
+            font-family: var(--font-body);
+            transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+            width: 100%;
         }
 
-        .agro-input:focus {
-            background-color: rgba(0, 0, 0, 0.6);
-            border-color: rgba(255, 255, 255, 0.7);
+        .form-input:focus {
+            background: rgba(0,0,0,0.55);
+            border-color: var(--clr-accent);
             outline: none;
-            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 0 3px rgba(0,212,255,0.18);
         }
 
-        .agro-input::placeholder {
-            color: rgba(255, 255, 255, 0.7);
+        .form-input::placeholder {
+            color: rgba(255,255,255,0.4);
         }
 
         .agro-result {
-            margin-top: 20px;
-            font-size: 1.2rem;
-            font-weight: bold;
+            margin-top: 18px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--clr-text);
             min-height: 1.5em;
+            line-height: 1.5;
         }
 
-        /* Chart Styles - Centralizados */
-        .charts-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-            margin-top: 20px;
-        }
-
-        .chart-wrapper {
-            flex: 1;
-            min-width: 300px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: var(--section-radius);
-            padding: 15px;
-            backdrop-filter: blur(5px);
-            display: flex;
-            flex-direction: column;
-            align-items: center; /* Centraliza o conteúdo (incluindo o chart-container) */
-        }
-
-        .chart-title {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            font-weight: bold;
-            text-align: center;
-        }
-
-        .chart-container {
-            width: 100%;
-            display: flex;
-            justify-content: center; /* Garante que o canvas dentro dele esteja centralizado */
-            /* Min-height para os gráficos não ficarem muito achatados */
-            min-height: 250px; 
-        }
-
-        canvas {
-            max-width: 100%;
-            height: auto; /* Garante que a altura se ajuste para manter a proporção */
-        }
-
-        /* Responsive Adjustments */
+        /* ── Responsive ────────────────────────────────────────────── */
         @media (max-width: 768px) {
-            header { font-size: 1.5rem; padding: 12px 15px; }
-            #relogio { font-size: 1.2rem; right: 15px; padding: 5px 10px; }
-            .numero-co2 { font-size: 3rem; }
-            .numero-co2s { font-size: 2.2rem; }
-            .descricao { font-size: 1.2rem; }
-            .subtitulo { font-size: 1.4rem; gap: 8px; }
-            section { padding: 25px; }
-            .logo-container, .logo-container-lefty { top: calc(var(--header-height) + 10px); transform: none; gap: 5px; }
-            .logo-container { right: 10px; }
-            .logo-container-lefty { left: 10px; }
-            .logoObs, .logoCop, .logoNew { width: 130px; }
-            .charts-container { flex-direction: column; }
-            .qrcode {display: none !important}
+            .card { padding: 26px 24px; }
+            .counter-value { font-size: 3rem; }
+            .counter-value.sm { font-size: 2.2rem; }
+            .counter-value.md { font-size: 2.5rem; }
+            .section-title { font-size: 1.1rem; }
         }
 
         @media (max-width: 480px) {
+            :root { --header-h: 60px; }
             body { padding-top: 60px; }
-            header { font-size: 1.2rem; justify-content: flex-start; padding-left: 15px; min-height: 60px; }
-            .header-content{ margin-right: 70px; }
-            #relogio { font-size: 1rem; top: 50%; transform: translateY(-50%); right: 10px; padding: 4px 8px; }
-            main { padding: 20px 10px; }
-            section { padding: 20px 15px; width: 100%; }
-            .numero-co2 { font-size: 2.5rem; }
-            .numero-co2s { font-size: 1.8rem; }
-            .descricao { font-size: 1.1rem; }
-            .subtitulo { font-size: 1.2rem; flex-direction: column; gap: 5px; }
-            .legenda { font-size: 0.9rem; }
-            .botao { padding: 8px 15px; font-size: 0.9rem; }
-            .logo-container, .logo-container-lefty { position: static; transform: none; flex-direction: row; justify-content: center; width: 100%; margin-bottom: 15px; padding: 0 10px; }
-            .logoObs, .logoCop, .logoNew { width: 70px; padding: 5px; }
-            .logo-container > .logo-img, .logo-container-lefty > .logo-img { margin: 0 5px; }
-            .qrcode {display:none !important}
+            header { height: 60px; }
+            .header-logo { font-size: 1.45rem; }
+            #relogio { font-size: 1rem; right: 12px; padding: 4px 10px; }
+            main { padding: 24px 12px 48px; gap: 18px; }
+            .card { padding: 22px 18px; border-radius: var(--radius-md); }
+            .nav-card { padding: 16px 18px; gap: 10px; }
+            .counter-value { font-size: 2.5rem; }
+            .counter-value.sm { font-size: 1.9rem; }
+            .counter-value.md { font-size: 2.1rem; }
+            .section-title { font-size: 1rem; }
+            .btn { padding: 8px 16px; font-size: 0.85rem; }
         }
     </style>
 </head>
 
 <body>
+
+    <!-- ── Header ──────────────────────────────────────────────────── -->
     <header>
-        <span class="header-content">LEDS – Infográfico Responsivo</span>
+        <div class="header-logo">
+            Track<span class="dot">.</span>air
+        </div>
         <div id="relogio">--:--</div>
     </header>
 
-    <div class="logo-container">
-        <img class="qrcode logo-img logoNew" src="https://i.ibb.co/NGHmfxp/logo100anos.png" alt="Logo Marista Santa Maria 100 anos">
-        <img class="qrcode logo-img logoNew" style="size:relative;height:200pt;width:200pt" src="https://i.ibb.co/0pTjzxbj/qr.png">
-    </div>
-    <div class="logo-container-lefty">
-        <img class="logo-img logoCop" src="https://i.ibb.co/xbfmWBy/Logo-COP-fundo-transparente.png" alt="Logo COP Colégio Marista Santa Maria">
-        <img class="logo-img logoObs" src="https://i.ibb.co/HfxV4y9b/Logo-Observat-rio-fundo-transparente.png" alt="Logo Observatório Marista">
-    </div>
-
     <main>
-        <!-- Seções originais mantidas -->
-        <section>
-            <a class="subtitulo" href="live-ic.html">Dados ao vivo</a> <a class="subtitulo" href="3d-info.html">Visualizador 3D</a>
-        </section>
-        <section> 
-            <div class="subtitulo" id="tituloPagina">🌍 Emissões Globais de CO₂ em Tempo Real</div>
-            <div class="numero-co2" id="co2Numero" aria-live="polite">...</div>
-            <div class="descricao" id="co2Descricao">toneladas emitidas até agora em 2025</div>
-            <div class="legenda" id="co2Legenda">Estimativa para 2025: 37,4 bilhões de toneladas</div>
-            <div class="botoes" id="botoesRegiao">
-                <button class="botao" id="btnMundo" data-pagina="mundo">Mundo</button>
-                <button class="botao" id="btnBrasil" data-pagina="brasil">Brasil</button>
-                <button class="botao" id="btnParana" data-pagina="parana">Paraná</button>
-                <button class="botao" id="btnCuritiba" data-pagina="curitiba">Curitiba</button>
-            </div>
-        </section>
 
-        <section>
-            <div class="subtitulo" id="tituloPagina2">🌍 Emissões Globais de CO₂ desde a criação do Marista</div>
-            <div class="numero-co2s" id="co2Numero2" aria-live="polite">...</div>
-            <div class="descricao" id="co2Descricao2">toneladas emitidas desde a criação do Marista</div>
-            <div class="botoes" id="botoesHistorico">
-                <button class="botao" id="btnMarista" data-pagina2="Marista">Marista</button>
-                <button class="botao" id="btnSanta" data-pagina2="Santa">Santa Maria</button>
-            </div>
-        </section>
+        <!-- ── Navigation ──────────────────────────────────────────── -->
+        <div class="card nav-card">
+            <a class="nav-link" href="live-ic.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                </svg>
+                Dados ao vivo
+            </a>
+            <a class="nav-link" href="3d-info.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+                Visualizador 3D
+            </a>
+        </div>
 
-        <section>
-            <div class="subtitulo" id="tituloPagina3">📅 Emissões Globais de CO₂ Desde um Ano Específico</div>
-            <div class="year-selector-container">
-                <span class="year-selector-label">Ano:</span>
+        <!-- ── Real-time Regional Emissions ────────────────────────── -->
+        <div class="card">
+            <div class="section-label">Tempo Real</div>
+            <div class="section-title" id="tituloPagina">Emissões Globais de CO₂</div>
+
+            <div class="counter-wrap">
+                <span class="counter-value" id="co2Numero" aria-live="polite">...</span>
+                <span class="counter-unit" id="co2Descricao">toneladas emitidas até agora em 2025</span>
+            </div>
+
+            <div class="counter-note" id="co2Legenda">Estimativa para 2025: 37,4 bilhões de toneladas</div>
+
+            <div class="divider"></div>
+
+            <div class="btn-group" id="botoesRegiao">
+                <button class="btn" id="btnMundo"    data-pagina="mundo">🌍 Mundo</button>
+                <button class="btn" id="btnBrasil"   data-pagina="brasil">🇧🇷 Brasil</button>
+                <button class="btn" id="btnParana"   data-pagina="parana">Paraná</button>
+                <button class="btn" id="btnCuritiba" data-pagina="curitiba">Curitiba</button>
+            </div>
+        </div>
+
+        <!-- ── Historical Emissions ─────────────────────────────────── -->
+        <div class="card">
+            <div class="section-label">Histórico</div>
+            <div class="section-title" id="tituloPagina2">Emissões Globais de CO₂ desde a criação do Marista</div>
+
+            <div class="counter-wrap">
+                <span class="counter-value sm" id="co2Numero2" aria-live="polite">...</span>
+                <span class="counter-unit" id="co2Descricao2">toneladas emitidas desde a criação do Marista</span>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="btn-group" id="botoesHistorico">
+                <button class="btn" id="btnMarista" data-pagina2="Marista">Marista (1817)</button>
+                <button class="btn" id="btnSanta"   data-pagina2="Santa">Santa Maria (1925)</button>
+            </div>
+        </div>
+
+        <!-- ── Custom Year Calculator ───────────────────────────────── -->
+        <div class="card">
+            <div class="section-label">Calculadora</div>
+            <div class="section-title" id="tituloPagina3">Emissões Globais de CO₂ desde um Ano Específico</div>
+
+            <div class="year-row">
+                <span class="year-row-label">A partir de:</span>
                 <div class="year-selector" id="yearSelector" tabindex="0">
-                    <span class="selected-year" id="selectedYearDisplay">1990</span>
-                    <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 10L12 15L17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    <div class="year-dropdown" id="yearDropdownList">
-                        <!-- Years will be populated by JavaScript -->
-                    </div>
+                    <span id="selectedYearDisplay">1990</span>
+                    <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M7 10l5 5 5-5"/>
+                    </svg>
+                    <div class="year-dropdown" id="yearDropdownList"></div>
                 </div>
-                <button class="botao" id="btnCalcularAno" style="margin-left: 15px;">Calcular</button>
+                <button class="btn" id="btnCalcularAno">Calcular</button>
             </div>
-            <div class="numero-co2" id="co2Numero3" aria-live="polite" style="font-size: 2.8rem;">...</div>
-            <div class="descricao" id="co2Descricao3">...</div>
-            <p id="erroAno" style="color: #ffdddd; font-weight: bold; min-height: 1.2em; margin-top:10px;"></p>
-        </section>
 
-        <!-- Nova seção: Calculadora de Emissões do Agronegócio -->
-        <section>
-            <div class="subtitulo">🌱 Calculadora de Emissões do Agronegócio</div>
-            <div class="agro-input-container">
-                <div class="agro-input-group">
-                    <label for="agro-activity">Atividade:</label>
-                    <select id="agro-activity" class="agro-input">
+            <div class="counter-wrap">
+                <span class="counter-value md" id="co2Numero3" aria-live="polite">...</span>
+                <span class="counter-unit" id="co2Descricao3">Selecione um ano e calcule.</span>
+            </div>
+
+            <p class="error-msg" id="erroAno"></p>
+        </div>
+
+        <!-- ── Agribusiness Calculator ──────────────────────────────── -->
+        <div class="card">
+            <div class="section-label">Agronegócio</div>
+            <div class="section-title">Calculadora de Emissões do Agronegócio</div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="agro-activity">Atividade</label>
+                    <select id="agro-activity" class="form-input">
                         <option value="soja">Soja</option>
                         <option value="milho">Milho</option>
                         <option value="cana">Cana-de-açúcar</option>
                         <option value="pecuaria">Pecuária (gado de corte)</option>
                     </select>
                 </div>
-                <div class="agro-input-group">
-                    <label for="agro-area">Área (hectares):</label>
-                    <input type="number" id="agro-area" class="agro-input" placeholder="Ex: 1000" min="0">
+                <div class="form-group">
+                    <label for="agro-area">Área (hectares)</label>
+                    <input type="number" id="agro-area" class="form-input" placeholder="Ex: 1000" min="0">
                 </div>
-                <div class="agro-input-group" id="agroCattleGroup"> <!-- Added ID for easier JS access -->
-                    <label for="agro-cattle">Número de cabeças (apenas para pecuária):</label>
-                    <input type="number" id="agro-cattle" class="agro-input" placeholder="Ex: 500" min="0">
+                <div class="form-group" id="agroCattleGroup">
+                    <label for="agro-cattle">Número de cabeças (pecuária)</label>
+                    <input type="number" id="agro-cattle" class="form-input" placeholder="Ex: 500" min="0">
                 </div>
             </div>
-            <button class="botao" id="btnCalcularAgro">Calcular Emissões</button>
-            <div class="agro-result" id="agroResult"></div>
-            <div class="legenda">Baseado em dados do <a href="https://seeg.eco.br/" target="_blank" rel="noopener noreferrer">SEEG</a> (Sistema de Estimativas de Emissões de Gases de Efeito Estufa) e <a href="https://www.embrapa.br/" target="_blank" rel="noopener noreferrer">EMBRAPA</a></div>
-        </section>
 
-        <!-- Nova seção: Gráficos Comparativos -->
-        <section>
-            <div class="subtitulo">📊 Análise Comparativa do Agronegócio</div>
-            
-            <div class="charts-container">
-                <div class="chart-wrapper">
-                    <div class="chart-title">Emissões por Cultura (tCO₂eq/ha/ano)</div>
-                    <div class="chart-container">
-                        <canvas id="emissionsChart"></canvas>
-                    </div>
-                </div>
-                <div class="chart-wrapper">
-                    <div class="chart-title">Área Cultivada no Brasil (milhões de ha)</div>
-                    <div class="chart-container">
-                        <canvas id="areaChart"></canvas>
-                    </div>
-                </div>
+            <button class="btn" id="btnCalcularAgro">Calcular Emissões</button>
+            <div class="agro-result" id="agroResult"></div>
+
+            <div class="counter-note" style="margin-top:18px;">
+                Baseado em dados do <a href="https://seeg.eco.br/" target="_blank" rel="noopener noreferrer">SEEG</a>
+                (Sistema de Estimativas de Emissões de Gases de Efeito Estufa) e
+                <a href="https://www.embrapa.br/" target="_blank" rel="noopener noreferrer">EMBRAPA</a>
             </div>
-            
-            <div class="charts-container">
-                <div class="chart-wrapper">
-                    <div class="chart-title">Emissões do Agronegócio por Tipo (2022)</div>
-                    <div class="chart-container">
-                        <canvas id="sectorChart"></canvas>
-                    </div>
-                </div>
-                <div class="chart-wrapper">
-                    <div class="chart-title">Comparação Agronegócio vs Agricultura Familiar</div>
-                    <div class="chart-container">
-                        <canvas id="comparisonChart"></canvas>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="legenda">Fontes: <a href="https://seeg.eco.br/" target="_blank" rel="noopener noreferrer">SEEG</a>, <a href="https://www.embrapa.br/" target="_blank" rel="noopener noreferrer">EMBRAPA</a>, <a href="https://www.ibge.gov.br/" target="_blank" rel="noopener noreferrer">IBGE</a> e <a href="https://www.conab.gov.br/" target="_blank" rel="noopener noreferrer">CONAB</a> - Dados de 2022</div>
-        </section>
+        </div>
+
     </main>
 
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <script>
-        "use strict";
+    "use strict";
 
-        // Dados de emissões do agronegócio atualizados com base em https://indicadores.agro.gov.br/
-        const agroEmissions = {
-            soja: 0.85, // tCO2eq por hectare por ano (SEEG/EMBRAPA)
-            milho: 0.72, // tCO2eq por hectare por ano (SEEG/EMBRAPA)
-            cana: 0.45, // tCO2eq por hectare por ano (SEEG - considerando queima)
-            pecuaria: 56.2 // tCO2eq por cabeça por ano (SEEG - gado de corte)
+    // ── Agribusiness emission factors ──────────────────────────────────
+    // Source: https://indicadores.agro.gov.br/ / SEEG / EMBRAPA
+    const agroEmissions = {
+        soja:     0.85,  // tCO2eq / ha / year
+        milho:    0.72,  // tCO2eq / ha / year
+        cana:     0.45,  // tCO2eq / ha / year (including burning)
+        pecuaria: 56.2   // tCO2eq / head / year (beef cattle)
+    };
+
+    // ── Historical CO₂ emissions by year (GtCO₂), 1750–2023 ───────────
+    const co2EmissionsByYear = {
+        "1750": 0.009305937, "1751": 0.009407229, "1752": 0.009505168, "1753": 0.00961049, "1754": 0.00973358, "1755": 0.009793468, "1756": 0.009909914, "1757": 0.010093936, "1758": 0.010216358, "1759": 0.010338854, "1760": 0.010514331, "1761": 0.010747885, "1762": 0.010952198, "1763": 0.011191592, "1764": 0.011396982, "1765": 0.011643486, "1766": 0.01187608, "1767": 0.012152509, "1768": 0.012466936, "1769": 0.012780074, "1770": 0.013097216, "1771": 0.013369488, "1772": 0.013623507, "1773": 0.013808138, "1774": 0.014012415, "1775": 0.01433892, "1776": 0.014654124, "1777": 0.014959537, "1778": 0.015243483, "1779": 0.015535235, "1780": 0.015878726, "1781": 0.016234383, "1782": 0.016580954, "1783": 0.017062751, "1784": 0.017471093, "1785": 0.017965127, "1786": 0.018447497, "1787": 0.01885913, "1788": 0.019286229, "1789": 0.019863425, "1790": 0.020398094, "1791": 0.020931749, "1792": 0.021929215, "1793": 0.022297261, "1794": 0.022519656, "1795": 0.022315246, "1796": 0.022121375, "1797": 0.022090078, "1798": 0.023105929, "1799": 0.027485207,
+        "1800": 0.032798352, "1801": 0.03198605, "1802": 0.040310473, "1803": 0.029538506, "1804": 0.031769177, "1805": 0.031251817, "1806": 0.032704622, "1807": 0.036200654, "1808": 0.035497789, "1809": 0.036333813, "1810": 0.039492312, "1811": 0.040176681, "1812": 0.040814523, "1813": 0.041206139, "1814": 0.042226646, "1815": 0.043587265, "1816": 0.045496577, "1817": 0.049275922, "1818": 0.05139201, "1819": 0.050930167, "1820": 0.050733074, "1821": 0.052059349, "1822": 0.054021712, "1823": 0.056357763, "1824": 0.057583637, "1825": 0.060730867, "1826": 0.06138213, "1827": 0.065738568, "1828": 0.06668179, "1829": 0.066307408, "1830": 0.088988498, "1831": 0.083250906, "1832": 0.082091751, "1833": 0.083248945, "1834": 0.088763111, "1835": 0.097399594, "1836": 0.106894495, "1837": 0.106199422, "1838": 0.105845261, "1839": 0.109653034, "1840": 0.118808512, "1841": 0.122165547, "1842": 0.129388789, "1843": 0.132369389, "1844": 0.141966448, "1845": 0.155073404, "1846": 0.157701789, "1847": 0.170796751, "1848": 0.17364348, "1849": 0.185048032,
+        "1850": 0.196847595, "1851": 0.198778547, "1852": 0.207595091, "1853": 0.217236968, "1854": 0.255038557, "1855": 0.260259851, "1856": 0.278245627, "1857": 0.281181048, "1858": 0.28554839, "1859": 0.302572176, "1860": 0.332298456, "1861": 0.349190174, "1862": 0.355991078, "1863": 0.379534888, "1864": 0.409525433, "1865": 0.43485133, "1866": 0.449067025, "1867": 0.480813908, "1868": 0.494493527, "1869": 0.524731062, "1870": 0.536123276, "1871": 0.569776587, "1872": 0.630961473, "1873": 0.670467213, "1874": 0.628662235, "1875": 0.681047983, "1876": 0.690582523, "1877": 0.704032862, "1878": 0.709649549, "1879": 0.75979439, "1880": 0.858055674, "1881": 0.887964969, "1882": 0.937888221, "1883": 0.997514559, "1884": 1.009429803, "1885": 1.01714455, "1886": 1.032613676, "1887": 1.083727515, "1888": 1.20080164, "1889": 1.201516232, "1890": 1.306591164, "1891": 1.368915607, "1892": 1.379808961, "1893": 1.362515016, "1894": 1.411532927, "1895": 1.495238838, "1896": 1.544660873, "1897": 1.617492798, "1898": 1.705960878, "1899": 1.863135385,
+        "1900": 1.96149074, "1901": 2.023963811, "1902": 2.074800354, "1903": 2.262046168, "1904": 2.28750933, "1905": 2.437062082, "1906": 2.544485736, "1907": 2.900324676, "1908": 2.785686667, "1909": 2.901167235, "1910": 3.0433259, "1911": 3.090098124, "1912": 3.246477083, "1913": 3.516532973, "1914": 3.189786302, "1915": 3.140276533, "1916": 3.391973242, "1917": 3.54813832, "1918": 3.499686323, "1919": 3.033839374, "1920": 3.537837259, "1921": 3.106184128, "1922": 3.254462643, "1923": 3.690697713, "1924": 3.702777064, "1925": 3.740633513, "1926": 3.677407432, "1927": 4.012947385, "1928": 3.99631173, "1929": 4.288211409, "1930": 3.958095957, "1931": 3.539320339, "1932": 3.192591529, "1933": 3.362683413, "1934": 3.656187221, "1935": 3.83574255, "1936": 4.207930753, "1937": 4.496715384, "1938": 4.229619213, "1939": 4.470134676, "1940": 4.884663525, "1941": 4.999092726, "1942": 4.982524053, "1943": 5.0752732, "1944": 5.162486555, "1945": 4.28931269, "1946": 4.608546995, "1947": 5.165205488, "1948": 5.447884758, "1949": 5.204035324,
+        "1950": 5.93024384,  "1951": 6.381428815, "1952": 6.467460418, "1953": 6.650885226, "1954": 6.789529059, "1955": 7.443895798, "1956": 7.926012519, "1957": 8.185644782, "1958": 8.417187818, "1959": 8.854689147, "1960": 9.387010408, "1961": 9.415042136, "1962": 9.747287164, "1963": 10.26677221,  "1964": 10.8244661,  "1965": 11.31060044, "1966": 11.86264632, "1967": 12.23736928, "1968": 12.90528307, "1969": 13.76178529, "1970": 14.89912444, "1971": 15.50385472, "1972": 16.22459665, "1973": 17.0850929,   "1974": 17.01107168, "1975": 17.05275263, "1976": 17.98911207, "1977": 18.49863422, "1978": 19.06929054, "1979": 19.60902029, "1980": 19.48852441, "1981": 19.02290478, "1982": 18.87109791, "1983": 18.99191043, "1984": 19.64780142, "1985": 20.31190163, "1986": 20.61496319, "1987": 21.2500746,   "1988": 22.08513001, "1989": 22.38663748, "1990": 22.7289883,  "1991": 23.18610144, "1992": 22.52817203, "1993": 22.75578699, "1994": 22.9929469,  "1995": 23.53208301, "1996": 24.25816745, "1997": 24.40190571, "1998": 24.30377731, "1999": 24.85372768,
+        "2000": 25.5105528,  "2001": 25.70629345, "2002": 26.27686873, "2003": 27.66948979, "2004": 28.63250593, "2005": 29.6143941,  "2006": 30.6283961,  "2007": 31.53464403, "2008": 32.07419856, "2009": 31.54192194, "2010": 33.35590344, "2011": 34.50453812, "2012": 35.00002034, "2013": 35.30165585, "2014": 35.45009475, "2015": 35.40489697, "2016": 35.41665608, "2017": 35.98989788, "2018": 36.73042656, "2019": 37.10427786, "2020": 35.12652612, "2021": 36.99173628, "2022": 37.29383639, "2023": 37.79156871
+    };
+
+    // 2024 annual estimate (tonnes)
+    const EMISSIONS_2024_ANNUAL = 37.9e9;
+
+    // ── App ─────────────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+
+        // Regional emission data
+        const emissoes = {
+            mundo:    { anual: 37.4e9,  titulo: "Emissões Globais de CO₂",       legenda: "Estimativa para 2025: 37,4 bilhões de toneladas" },
+            brasil:   { anual: 1.3e9,   titulo: "Emissões de CO₂ do Brasil",      legenda: "Estimativa para 2025: 1,3 bilhão de toneladas" },
+            parana:   { anual: 62.5e6,  titulo: "Emissões de CO₂ do Paraná",      legenda: "Estimativa para 2025: 62,5 milhões de toneladas" },
+            curitiba: { anual: 8.1e6,   titulo: "Emissões de CO₂ de Curitiba",    legenda: "Estimativa para 2025: 8,1 milhões de toneladas" }
         };
 
-        // Dados históricos de emissões de CO2 (AGORA COM DADOS COMPLETOS DESDE 1750)
-        const co2EmissionsByYear = {
-            "1750": 0.009305937, "1751": 0.009407229, "1752": 0.009505168, "1753": 0.00961049, "1754": 0.00973358, "1755": 0.009793468, "1756": 0.009909914, "1757": 0.010093936, "1758": 0.010216358, "1759": 0.010338854, "1760": 0.010514331, "1761": 0.010747885, "1762": 0.010952198, "1763": 0.011191592, "1764": 0.011396982, "1765": 0.011643486, "1766": 0.01187608, "1767": 0.012152509, "1768": 0.012466936, "1769": 0.012780074, "1770": 0.013097216, "1771": 0.013369488, "1772": 0.013623507, "1773": 0.013808138, "1774": 0.014012415, "1775": 0.01433892, "1776": 0.014654124, "1777": 0.014959537, "1778": 0.015243483, "1779": 0.015535235, "1780": 0.015878726, "1781": 0.016234383, "1782": 0.016580954, "1783": 0.017062751, "1784": 0.017471093, "1785": 0.017965127, "1786": 0.018447497, "1787": 0.01885913, "1788": 0.019286229, "1789": 0.019863425, "1790": 0.020398094, "1791": 0.020931749, "1792": 0.021929215, "1793": 0.022297261, "1794": 0.022519656, "1795": 0.022315246, "1796": 0.022121375, "1797": 0.022090078, "1798": 0.023105929, "1799": 0.027485207,
-            "1800": 0.032798352, "1801": 0.03198605, "1802": 0.040310473, "1803": 0.029538506, "1804": 0.031769177, "1805": 0.031251817, "1806": 0.032704622, "1807": 0.036200654, "1808": 0.035497789, "1809": 0.036333813, "1810": 0.039492312, "1811": 0.040176681, "1812": 0.040814523, "1813": 0.041206139, "1814": 0.042226646, "1815": 0.043587265, "1816": 0.045496577, "1817": 0.049275922, "1818": 0.05139201, "1819": 0.050930167, "1820": 0.050733074, "1821": 0.052059349, "1822": 0.054021712, "1823": 0.056357763, "1824": 0.057583637, "1825": 0.060730867, "1826": 0.06138213, "1827": 0.065738568, "1828": 0.06668179, "1829": 0.066307408, "1830": 0.088988498, "1831": 0.083250906, "1832": 0.082091751, "1833": 0.083248945, "1834": 0.088763111, "1835": 0.097399594, "1836": 0.106894495, "1837": 0.106199422, "1838": 0.105845261, "1839": 0.109653034, "1840": 0.118808512, "1841": 0.122165547, "1842": 0.129388789, "1843": 0.132369389, "1844": 0.141966448, "1845": 0.155073404, "1846": 0.157701789, "1847": 0.170796751, "1848": 0.17364348, "1849": 0.185048032,
-            "1850": 0.196847595, "1851": 0.198778547, "1852": 0.207595091, "1853": 0.217236968, "1854": 0.255038557, "1855": 0.260259851, "1856": 0.278245627, "1857": 0.281181048, "1858": 0.28554839, "1859": 0.302572176, "1860": 0.332298456, "1861": 0.349190174, "1862": 0.355991078, "1863": 0.379534888, "1864": 0.409525433, "1865": 0.43485133, "1866": 0.449067025, "1867": 0.480813908, "1868": 0.494493527, "1869": 0.524731062, "1870": 0.536123276, "1871": 0.569776587, "1872": 0.630961473, "1873": 0.670467213, "1874": 0.628662235, "1875": 0.681047983, "1876": 0.690582523, "1877": 0.704032862, "1878": 0.709649549, "1879": 0.75979439, "1880": 0.858055674, "1881": 0.887964969, "1882": 0.937888221, "1883": 0.997514559, "1884": 1.009429803, "1885": 1.01714455, "1886": 1.032613676, "1887": 1.083727515, "1888": 1.20080164, "1889": 1.201516232, "1890": 1.306591164, "1891": 1.368915607, "1892": 1.379808961, "1893": 1.362515016, "1894": 1.411532927, "1895": 1.495238838, "1896": 1.544660873, "1897": 1.617492798, "1898": 1.705960878, "1899": 1.863135385,
-            "1900": 1.96149074, "1901": 2.023963811, "1902": 2.074800354, "1903": 2.262046168, "1904": 2.28750933, "1905": 2.437062082, "1906": 2.544485736, "1907": 2.900324676, "1908": 2.785686667, "1909": 2.901167235, "1910": 3.0433259, "1911": 3.090098124, "1912": 3.246477083, "1913": 3.516532973, "1914": 3.189786302, "1915": 3.140276533, "1916": 3.391973242, "1917": 3.54813832, "1918": 3.499686323, "1919": 3.033839374, "1920": 3.537837259, "1921": 3.106184128, "1922": 3.254462643, "1923": 3.690697713, "1924": 3.702777064, "1925": 3.740633513, "1926": 3.677407432, "1927": 4.012947385, "1928": 3.99631173, "1929": 4.288211409, "1930": 3.958095957, "1931": 3.539320339, "1932": 3.192591529, "1933": 3.362683413, "1934": 3.656187221, "1935": 3.83574255, "1936": 4.207930753, "1937": 4.496715384, "1938": 4.229619213, "1939": 4.470134676, "1940": 4.884663525, "1941": 4.999092726, "1942": 4.982524053, "1943": 5.0752732, "1944": 5.162486555, "1945": 4.28931269, "1946": 4.608546995, "1947": 5.165205488, "1948": 5.447884758, "1949": 5.204035324,
-            "1950": 5.93024384,  "1951": 6.381428815, "1952": 6.467460418, "1953": 6.650885226, "1954": 6.789529059, "1955": 7.443895798, "1956": 7.926012519, "1957": 8.185644782, "1958": 8.417187818, "1959": 8.854689147, "1960": 9.387010408, "1961": 9.415042136, "1962": 9.747287164, "1963": 10.26677221,  "1964": 10.8244661,  "1965": 11.31060044, "1966": 11.86264632, "1967": 12.23736928, "1968": 12.90528307, "1969": 13.76178529, "1970": 14.89912444, "1971": 15.50385472, "1972": 16.22459665, "1973": 17.0850929,   "1974": 17.01107168, "1975": 17.05275263, "1976": 17.98911207, "1977": 18.49863422, "1978": 19.06929054, "1979": 19.60902029, "1980": 19.48852441, "1981": 19.02290478, "1982": 18.87109791, "1983": 18.99191043, "1984": 19.64780142, "1985": 20.31190163, "1986": 20.61496319, "1987": 21.2500746,   "1988": 22.08513001, "1989": 22.38663748, "1990": 22.7289883,  "1991": 23.18610144, "1992": 22.52817203, "1993": 22.75578699, "1994": 22.9929469,  "1995": 23.53208301, "1996": 24.25816745, "1997": 24.40190571, "1998": 24.30377731, "1999": 24.85372768,
-            "2000": 25.5105528,  "2001": 25.70629345, "2002": 26.27686873, "2003": 27.66948979, "2004": 28.63250593, "2005": 29.6143941,  "2006": 30.6283961,  "2007": 31.53464403, "2008": 32.07419856, "2009": 31.54192194, "2010": 33.35590344, "2011": 34.50453812, "2012": 35.00002034, "2013": 35.30165585, "2014": 35.45009475, "2015": 35.40489697, "2016": 35.41665608, "2017": 35.98989788, "2018": 36.73042656, "2019": 37.10427786, "2020": 35.12652612, "2021": 36.99173628, "2022": 37.29383639, "2023": 37.79156871
+        const emissoesHistorico = {
+            Marista: { titulo: "Emissões Globais de CO₂ desde a criação do Marista (1817)", baseAte2025: 1848365645658.47, global2025: 37.4e9 },
+            Santa:   { titulo: "Emissões Globais de CO₂ desde a criação do Santa Maria (1925)", baseAte2025: 1732301526553.08, global2025: 37.4e9 }
         };
 
-        // Estimate for 2024 annual emissions (in tonnes)
-        const EMISSIONS_2024_ANNUAL = 37.9e9;
+        // State
+        let paginaAtualRegiao    = "mundo";
+        let paginaAtualHistorico = "Marista";
+        let intervaloTroca1      = null;
+        let intervaloTroca2      = null;
 
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log("DOM Content Loaded. Script starting.");
+        const MIN_YEAR = 1750;
+        let customStartYear = MIN_YEAR;
+        let fixedEmissionsSumForCustomYear = 0;
 
-            // Dados de emissões por região
-            const emissoes = {
-                mundo: { anual: 37.4e9, titulo: "🌍 Emissões Globais de CO₂", legenda: "Estimativa para 2025: 37,4 bilhões de toneladas" },
-                brasil: { anual: 1.3e9, titulo: "🇧🇷 Emissões de CO₂ do Brasil", legenda: "Estimativa para 2025: 1,3 bilhão de toneladas" },
-                parana: { anual: 62.5e6, titulo: "🏞️ Emissões de CO₂ do Paraná", legenda: "Estimativa para 2025: 62,5 milhões de toneladas" },
-                curitiba: { anual: 8.1e6, titulo: "🏙️ Emissões de CO₂ de Curitiba", legenda: "Estimativa para 2025: 8,1 milhões de toneladas" }
-            };
+        // DOM refs
+        const co2Numero      = document.getElementById("co2Numero");
+        const co2Descricao   = document.getElementById("co2Descricao");
+        const tituloPagina   = document.getElementById("tituloPagina");
+        const co2Legenda     = document.getElementById("co2Legenda");
+        const botoesRegiaoEl = document.getElementById("botoesRegiao");
+        const botoesRegiao   = botoesRegiaoEl?.querySelectorAll(".btn") ?? [];
 
-            const emissoesHistorico = {
-                Marista: { titulo: "🌍 Emissões Globais de CO₂ desde a criação do Marista (1817)", baseAte2025: 1848365645658.47, global2025: 37.4e9 },
-                Santa: { titulo: "🌍 Emissões Globais de CO₂ desde a criação do Santa Maria (1925)", baseAte2025: 1732301526553.08, global2025: 37.4e9 }
-            };
+        const co2Numero2      = document.getElementById("co2Numero2");
+        const co2Descricao2   = document.getElementById("co2Descricao2");
+        const tituloPagina2   = document.getElementById("tituloPagina2");
+        const botoesHistEl    = document.getElementById("botoesHistorico");
+        const botoesHistorico = botoesHistEl?.querySelectorAll(".btn") ?? [];
 
-            // Variáveis de estado
-            let paginaAtualRegiao = "mundo";
-            let paginaAtualHistorico = "Marista";
-            let intervaloTroca1 = null;
-            let intervaloTroca2 = null;
-            
-            // Definindo o ano mínimo permitido com base nos dados disponíveis
-            const minAllowedYearForCustomCalc = 1750; // AGORA COMEÇA EM 1750
-            let customStartYear = minAllowedYearForCustomCalc; // Ano padrão inicial definido para o mínimo
-            
-            let fixedEmissionsSumForCustomYear = 0;
+        const yearSelectorEl   = document.getElementById("yearSelector");
+        const selectedYearDisp = document.getElementById("selectedYearDisplay");
+        const yearDropdownList = document.getElementById("yearDropdownList");
+        const btnCalcularAno   = document.getElementById("btnCalcularAno");
+        const co2Numero3       = document.getElementById("co2Numero3");
+        const co2Descricao3    = document.getElementById("co2Descricao3");
+        const erroAno          = document.getElementById("erroAno");
+        const relogioEl        = document.getElementById("relogio");
 
-            // Elementos DOM
-            const co2NumeroElement = document.getElementById("co2Numero");
-            const co2DescricaoElement = document.getElementById("co2Descricao");
-            const tituloPaginaElement = document.getElementById("tituloPagina");
-            const co2LegendaElement = document.getElementById("co2Legenda");
-            const botoesRegiaoContainer = document.getElementById("botoesRegiao");
-            const botoesRegiao = botoesRegiaoContainer ? botoesRegiaoContainer.querySelectorAll(".botao") : [];
+        const agroActivity     = document.getElementById("agro-activity");
+        const agroArea         = document.getElementById("agro-area");
+        const agroCattle       = document.getElementById("agro-cattle");
+        const agroCattleGroup  = document.getElementById("agroCattleGroup");
+        const btnCalcularAgro  = document.getElementById("btnCalcularAgro");
+        const agroResult       = document.getElementById("agroResult");
 
-            const co2NumeroElement2 = document.getElementById("co2Numero2");
-            const co2DescricaoElement2 = document.getElementById("co2Descricao2");
-            const tituloPaginaElement2 = document.getElementById("tituloPagina2");
-            const botoesHistoricoContainer = document.getElementById("botoesHistorico");
-            const botoesHistorico = botoesHistoricoContainer ? botoesHistoricoContainer.querySelectorAll(".botao") : [];
+        // ── Helpers ──────────────────────────────────────────────────
+        function segundosTotaisNoAno(year) {
+            return (new Date(year + 1, 0, 1) - new Date(year, 0, 1)) / 1000;
+        }
 
-            const yearSelectorElement = document.getElementById("yearSelector");
-            const selectedYearDisplayElement = document.getElementById("selectedYearDisplay");
-            const yearDropdownListElement = document.getElementById("yearDropdownList");
-            const btnCalcularAnoElement = document.getElementById("btnCalcularAno");
-            const co2NumeroElement3 = document.getElementById("co2Numero3");
-            const co2DescricaoElement3 = document.getElementById("co2Descricao3");
-            const erroAnoElement = document.getElementById("erroAno");
-
-            const relogioElement = document.getElementById("relogio");
-
-            // Elementos da nova seção de agronegócio
-            const agroActivityElement = document.getElementById("agro-activity");
-            const agroAreaElement = document.getElementById("agro-area");
-            const agroCattleElement = document.getElementById("agro-cattle");
-            const agroCattleGroupElement = document.getElementById("agroCattleGroup"); // Get the group
-            const btnCalcularAgroElement = document.getElementById("btnCalcularAgro");
-            const agroResultElement = document.getElementById("agroResult");
-
-            // Funções de cálculo e atualização
-            function segundosTotaisNoAno(year) {
-                return (new Date(year + 1, 0, 1) - new Date(year, 0, 1)) / 1000;
+        function segundosDesdeInicioDoAno(year) {
+            const agora = new Date();
+            if (agora.getFullYear() !== year) {
+                const startOfYear = new Date(agora.getFullYear(), 0, 1);
+                const secondsElapsed = (agora - startOfYear) / 1000;
+                const totalSecondsInCurrentActualYear = segundosTotaisNoAno(agora.getFullYear());
+                if (totalSecondsInCurrentActualYear === 0) return 0;
+                return Math.floor((secondsElapsed / totalSecondsInCurrentActualYear) * segundosTotaisNoAno(year));
             }
+            return Math.floor((agora - new Date(year, 0, 1)) / 1000);
+        }
 
-            function segundosDesdeInicioDoAno(year) {
-                const agora = new Date();
-                if (agora.getFullYear() !== year) {
-                    const startOfYear = new Date(agora.getFullYear(), 0, 1);
-                    const secondsElapsed = (agora - startOfYear) / 1000;
-                    const totalSecondsInCurrentActualYear = segundosTotaisNoAno(agora.getFullYear());
-                    if (totalSecondsInCurrentActualYear === 0) return 0;
-                    return Math.floor((secondsElapsed / totalSecondsInCurrentActualYear) * segundosTotaisNoAno(year));
-                }
-                const inicio = new Date(year, 0, 1);
-                return Math.floor((agora - inicio) / 1000);
+        function fmt(n) {
+            if (isNaN(n)) return "...";
+            return n.toLocaleString('pt-BR', { maximumFractionDigits: 0, useGrouping: true });
+        }
+
+        // ── Update functions ─────────────────────────────────────────
+        function atualizarEmissoesRegiao() {
+            const y = 2025;
+            const seg = segundosTotaisNoAno(y);
+            if (!seg) return;
+            const emitido = (emissoes[paginaAtualRegiao].anual / seg) * segundosDesdeInicioDoAno(y);
+            if (co2Numero)    co2Numero.textContent    = fmt(emitido);
+            if (co2Descricao) co2Descricao.textContent = `toneladas emitidas até agora em ${y}`;
+        }
+
+        function atualizarEmissoesHistorico() {
+            const y = 2025;
+            const seg = segundosTotaisNoAno(y);
+            if (!seg) return;
+            const d = emissoesHistorico[paginaAtualHistorico];
+            const emitidoTotal = d.baseAte2025 + (d.global2025 / seg) * segundosDesdeInicioDoAno(y);
+            if (co2Numero2)  co2Numero2.textContent  = fmt(emitidoTotal);
+            if (co2Descricao2) {
+                co2Descricao2.textContent = paginaAtualHistorico === "Santa"
+                    ? "toneladas emitidas desde a criação do Santa Maria"
+                    : `toneladas emitidas desde a criação do ${paginaAtualHistorico}`;
             }
+        }
 
-            function formatarNumero(numero) {
-                if (isNaN(numero)) {
-                    console.warn("formatarNumero received NaN, returning '...'");
-                    return "...";
-                }
-                return numero.toLocaleString('pt-BR', { maximumFractionDigits: 0, useGrouping: true });
-            }
+        function atualizarRelogio() {
+            const agora = new Date();
+            if (relogioEl) relogioEl.textContent =
+                `${String(agora.getHours()).padStart(2,'0')}:${String(agora.getMinutes()).padStart(2,'0')}`;
+        }
 
-            function atualizarEmissoesRegiao() {
-                const currentYear = 2025;
-                const segundosAno = segundosTotaisNoAno(currentYear);
-                const segundosPassados = segundosDesdeInicioDoAno(currentYear);
-                const emissaoAnual = emissoes[paginaAtualRegiao].anual;
+        // ── Region switching ─────────────────────────────────────────
+        function mudarPaginaRegiao(pagina) {
+            if (!emissoes[pagina] || pagina === paginaAtualRegiao) return;
+            paginaAtualRegiao = pagina;
+            if (tituloPagina) tituloPagina.textContent = emissoes[pagina].titulo;
+            if (co2Legenda)   co2Legenda.textContent   = emissoes[pagina].legenda;
+            botoesRegiao.forEach(btn => {
+                btn.classList.toggle("active", btn.dataset.pagina === pagina);
+            });
+            atualizarEmissoesRegiao();
+        }
 
-                if (segundosAno === 0) return;
+        function mudarPaginaHistorico(pagina) {
+            if (!emissoesHistorico[pagina] || pagina === paginaAtualHistorico) return;
+            paginaAtualHistorico = pagina;
+            if (tituloPagina2) tituloPagina2.textContent = emissoesHistorico[pagina].titulo;
+            botoesHistorico.forEach(btn => {
+                btn.classList.toggle("active", btn.dataset.pagina2 === pagina);
+            });
+            atualizarEmissoesHistorico();
+        }
 
-                const emissaoPorSegundo = emissaoAnual / segundosAno;
-                const emitido = emissaoPorSegundo * segundosPassados;
+        function iniciarTrocaAutomaticaRegiao() {
+            if (intervaloTroca1) clearInterval(intervaloTroca1);
+            const paginas = Object.keys(emissoes);
+            let index = paginas.indexOf(paginaAtualRegiao);
+            intervaloTroca1 = setInterval(() => {
+                index = (index + 1) % paginas.length;
+                mudarPaginaRegiao(paginas[index]);
+            }, 5000);
+        }
 
-                if (co2NumeroElement) co2NumeroElement.textContent = formatarNumero(emitido);
-                if (co2DescricaoElement) co2DescricaoElement.textContent = `toneladas emitidas até agora em ${currentYear}`;
-            }
+        function iniciarTrocaAutomaticaHistorico() {
+            if (intervaloTroca2) clearInterval(intervaloTroca2);
+            const paginas = Object.keys(emissoesHistorico);
+            let index = paginas.indexOf(paginaAtualHistorico);
+            intervaloTroca2 = setInterval(() => {
+                index = (index + 1) % paginas.length;
+                mudarPaginaHistorico(paginas[index]);
+            }, 6000);
+        }
 
-            function atualizarEmissoesHistorico() {
-                const currentYear = 2025;
-                const segundosAno = segundosTotaisNoAno(currentYear);
-                const segundosPassados = segundosDesdeInicioDoAno(currentYear);
-                const dadosHistorico = emissoesHistorico[paginaAtualHistorico];
-
-                if (segundosAno === 0) return;
-
-                const emissaoPorSegundo2025 = dadosHistorico.global2025 / segundosAno;
-                const emitidoEm2025 = emissaoPorSegundo2025 * segundosPassados;
-                const emitidoTotal = dadosHistorico.baseAte2025 + emitidoEm2025;
-
-                if (co2NumeroElement2) co2NumeroElement2.textContent = formatarNumero(emitidoTotal);
-                if (co2DescricaoElement2) {
-                    if (paginaAtualHistorico === "Santa") {
-                        co2DescricaoElement2.textContent = `toneladas emitidas desde a criação do Santa Maria`;
-                    } else {
-                        co2DescricaoElement2.textContent = `toneladas emitidas desde a criação do ${paginaAtualHistorico}`;
-                    }
-                }
-            }
-
-            function atualizarRelogio() {
-                const agora = new Date();
-                const horas = String(agora.getHours()).padStart(2, '0');
-                const minutos = String(agora.getMinutes()).padStart(2, '0');
-                if (relogioElement) relogioElement.textContent = `${horas}:${minutos}`;
-            }
-
-            function mudarPaginaRegiao(pagina) {
-                if (!emissoes[pagina] || pagina === paginaAtualRegiao) return;
-                paginaAtualRegiao = pagina;
-                if (tituloPaginaElement) tituloPaginaElement.textContent = emissoes[pagina].titulo;
-                if (co2LegendaElement) co2LegendaElement.textContent = emissoes[pagina].legenda;
-                if (botoesRegiao) {
-                    botoesRegiao.forEach(btn => {
-                        btn.classList.remove("ativo");
-                        if (btn.dataset.pagina === pagina) btn.classList.add("ativo");
-                    });
-                }
-                atualizarEmissoesRegiao();
-            }
-
-            function mudarPaginaHistorico(pagina) {
-                if (!emissoesHistorico[pagina] || pagina === paginaAtualHistorico) return;
-                paginaAtualHistorico = pagina;
-                if (tituloPaginaElement2) tituloPaginaElement2.textContent = emissoesHistorico[pagina].titulo;
-                if (botoesHistorico) {
-                    botoesHistorico.forEach(btn => {
-                        btn.classList.remove("ativo");
-                        if (btn.dataset.pagina2 === pagina) btn.classList.add("ativo");
-                    });
-                }
-                atualizarEmissoesHistorico();
-            }
-
-            function iniciarTrocaAutomaticaRegiao() {
-                if (intervaloTroca1) clearInterval(intervaloTroca1);
-                const paginas = Object.keys(emissoes);
-                if (paginas.length === 0) return;
-                let index = paginas.indexOf(paginaAtualRegiao);
-                if (index === -1) index = 0;
-                intervaloTroca1 = setInterval(() => {
-                    index = (index + 1) % paginas.length;
-                    mudarPaginaRegiao(paginas[index]);
-                }, 5000);
-            }
-
-            function iniciarTrocaAutomaticaHistorico() {
-                if (intervaloTroca2) clearInterval(intervaloTroca2);
-                const paginas = Object.keys(emissoesHistorico);
-                if (paginas.length === 0) return;
-                let index = paginas.indexOf(paginaAtualHistorico);
-                if (index === -1) index = 0;
-                intervaloTroca2 = setInterval(() => {
-                    index = (index + 1) % paginas.length;
-                    mudarPaginaHistorico(paginas[index]);
-                }, 6000);
-            }
-
-            function populateYearDropdown() {
-                if (!yearDropdownListElement || !selectedYearDisplayElement) {
-                    console.error("Year dropdown elements not found for population.");
-                    return;
-                }
-                yearDropdownListElement.innerHTML = '';
-                const minYear = minAllowedYearForCustomCalc; // Usando o mínimo permitido (1750)
-                const maxYear = 2025;
-                for (let year = maxYear; year >= minYear; year--) {
-                    const yearItem = document.createElement('div');
-                    yearItem.textContent = year;
-                    yearItem.dataset.year = year;
-                    if (year === customStartYear) {
-                        yearItem.classList.add('selected-item');
-                    }
-                    yearItem.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        customStartYear = parseInt(e.target.dataset.year, 10);
-                        selectedYearDisplayElement.textContent = customStartYear;
-
-                        const currentlySelected = yearDropdownListElement.querySelector('.selected-item');
-                        if (currentlySelected) {
-                            currentlySelected.classList.remove('selected-item');
-                        }
-                        e.target.classList.add('selected-item');
-
-                        if (yearSelectorElement) yearSelectorElement.classList.remove('open');
-                    });
-                    yearDropdownListElement.appendChild(yearItem);
-                }
-                // Garante que o ano selecionado padrão seja ajustado se estiver fora do novo range
-                if (customStartYear < minYear) {
-                    customStartYear = minYear;
-                }
-                selectedYearDisplayElement.textContent = customStartYear;
-            }
-
-            // Event listeners para o seletor de ano
-            if (yearSelectorElement) {
-                yearSelectorElement.addEventListener('click', (e) => {
-                    if (e.target === yearDropdownListElement) return;
-                    yearSelectorElement.classList.toggle('open');
+        // ── Year dropdown ────────────────────────────────────────────
+        function populateYearDropdown() {
+            if (!yearDropdownList || !selectedYearDisp) return;
+            yearDropdownList.innerHTML = '';
+            for (let year = 2025; year >= MIN_YEAR; year--) {
+                const item = document.createElement('div');
+                item.textContent  = year;
+                item.dataset.year = year;
+                if (year === customStartYear) item.classList.add('selected-item');
+                item.addEventListener('click', e => {
+                    e.stopPropagation();
+                    customStartYear = parseInt(e.target.dataset.year, 10);
+                    selectedYearDisp.textContent = customStartYear;
+                    yearDropdownList.querySelector('.selected-item')?.classList.remove('selected-item');
+                    e.target.classList.add('selected-item');
+                    yearSelectorEl?.classList.remove('open');
                 });
-                document.addEventListener('click', (event) => {
-                    if (yearSelectorElement && !yearSelectorElement.contains(event.target)) {
-                        yearSelectorElement.classList.remove('open');
-                    }
-                });
-                yearSelectorElement.addEventListener('keydown', (event) => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault();
-                        yearSelectorElement.classList.toggle('open');
-                    } else if (event.key === 'Escape') {
-                        yearSelectorElement.classList.remove('open');
-                    }
-                });
+                yearDropdownList.appendChild(item);
             }
+            selectedYearDisp.textContent = customStartYear;
+        }
 
-            function aoClicarBotaoRegiao(event) {
-                console.log("aoClicarBotaoRegiao triggered");
-                const pagina = event.target.dataset.pagina;
-                if (pagina) {
-                    if (intervaloTroca1) {
-                        clearInterval(intervaloTroca1);
-                        intervaloTroca1 = null;
-                    }
-                    mudarPaginaRegiao(pagina);
-                }
-            }
+        if (yearSelectorEl) {
+            yearSelectorEl.addEventListener('click', e => {
+                if (e.target === yearDropdownList) return;
+                yearSelectorEl.classList.toggle('open');
+            });
+            document.addEventListener('click', e => {
+                if (!yearSelectorEl.contains(e.target)) yearSelectorEl.classList.remove('open');
+            });
+            yearSelectorEl.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); yearSelectorEl.classList.toggle('open'); }
+                else if (e.key === 'Escape') yearSelectorEl.classList.remove('open');
+            });
+        }
 
-            function aoClicarBotaoHistorico(event) {
-                console.log("aoClicarBotaoHistorico triggered");
-                const pagina = event.target.dataset.pagina2;
-                if (pagina) {
-                    if (intervaloTroca2) {
-                        clearInterval(intervaloTroca2);
-                        intervaloTroca2 = null;
-                    }
-                    mudarPaginaHistorico(pagina);
-                }
-            }
+        // ── Custom year calculation ───────────────────────────────────
+        function aoCalcularAnoCustomizado() {
+            if (erroAno) erroAno.textContent = "";
+            const anoInput = customStartYear;
 
-            function aoCalcularAnoCustomizado() {
-                console.log("[Calcular Custom] aoCalcularAnoCustomizado called");
-                const anoInput = customStartYear;
-                console.log("[Calcular Custom] Using customStartYear:", anoInput);
-
-                if (erroAnoElement) erroAnoElement.textContent = "";
-
-                if (isNaN(anoInput) || anoInput < minAllowedYearForCustomCalc || anoInput > 2025) { // Usando o mínimo permitido (1750)
-                    if (erroAnoElement) erroAnoElement.textContent = `Ano selecionado inválido. Selecione entre ${minAllowedYearForCustomCalc} e 2025.`;
-                    fixedEmissionsSumForCustomYear = 0;
-                    console.log("[Calcular Custom] Validation failed for anoInput from customStartYear.");
-                    atualizarEmissoesCustomYear();
-                    return;
-                }
-
+            if (isNaN(anoInput) || anoInput < MIN_YEAR || anoInput > 2025) {
+                if (erroAno) erroAno.textContent = `Selecione um ano entre ${MIN_YEAR} e 2025.`;
                 fixedEmissionsSumForCustomYear = 0;
-                for (let year = anoInput; year <= 2023; year++) {
-                    const yearStr = year.toString();
-                    if (co2EmissionsByYear.hasOwnProperty(yearStr) && typeof co2EmissionsByYear[yearStr] === 'number' && !isNaN(co2EmissionsByYear[yearStr])) {
-                        fixedEmissionsSumForCustomYear += co2EmissionsByYear[yearStr] * 1e9; // Os dados estão em GtCO2, multiplicamos por 1e9 para toneladas
-                    } else {
-                        console.warn(`[Calcular Custom] Data for year ${yearStr} problem. Value:`, co2EmissionsByYear[yearStr]);
-                    }
-                }
-                console.log(`[Calcular Custom] Sum from ${anoInput}-2023:`, fixedEmissionsSumForCustomYear);
-
-                if (anoInput <= 2024) {
-                    if (typeof EMISSIONS_2024_ANNUAL === 'number' && !isNaN(EMISSIONS_2024_ANNUAL)) {
-                        fixedEmissionsSumForCustomYear += EMISSIONS_2024_ANNUAL;
-                    } else {
-                        console.warn("[Calcular Custom] EMISSIONS_2024_ANNUAL problem:", EMISSIONS_2024_ANNUAL);
-                    }
-                }
-                console.log(`[Calcular Custom] Sum after 2024 (if ${anoInput} <= 2024):`, fixedEmissionsSumForCustomYear);
-
-                if (isNaN(fixedEmissionsSumForCustomYear)) {
-                    console.error("[Calcular Custom] CRITICAL: fixedEmissionsSumForCustomYear became NaN.");
-                    if (erroAnoElement) erroAnoElement.textContent = "Erro ao calcular dados históricos.";
-                    customStartYear = minAllowedYearForCustomCalc; // Redefinir para o mínimo permitido
-                    if (selectedYearDisplayElement) selectedYearDisplayElement.textContent = customStartYear;
-                    if (yearDropdownListElement) {
-                        const oldSel = yearDropdownListElement.querySelector('.selected-item');
-                        if (oldSel) oldSel.classList.remove('selected-item');
-                        const newSel = yearDropdownListElement.querySelector(`[data-year="${customStartYear}"]`);
-                        if (newSel) newSel.classList.add('selected-item');
-                    }
-                }
                 atualizarEmissoesCustomYear();
+                return;
             }
 
-            function atualizarEmissoesCustomYear() {
-                if (customStartYear === null || isNaN(customStartYear)) {
-                    if (co2NumeroElement3) co2NumeroElement3.textContent = "...";
-                    if (co2DescricaoElement3) co2DescricaoElement3.textContent = "Selecione um ano e calcule.";
-                    return;
-                }
+            fixedEmissionsSumForCustomYear = 0;
+            for (let year = anoInput; year <= 2023; year++) {
+                const v = co2EmissionsByYear[year.toString()];
+                if (typeof v === 'number' && !isNaN(v)) fixedEmissionsSumForCustomYear += v * 1e9;
+            }
+            if (anoInput <= 2024) fixedEmissionsSumForCustomYear += EMISSIONS_2024_ANNUAL;
 
-                const currentYearForCalc = 2025;
-                let totalEmitidoDesdeCustomYear = fixedEmissionsSumForCustomYear;
+            if (isNaN(fixedEmissionsSumForCustomYear)) {
+                if (erroAno) erroAno.textContent = "Erro ao calcular dados históricos.";
+            }
+            atualizarEmissoesCustomYear();
+        }
 
-                if (isNaN(totalEmitidoDesdeCustomYear)) {
-                    console.error("[Atualizar Custom] fixedEmissionsSumForCustomYear is NaN before adding 2025 part! Value:", fixedEmissionsSumForCustomYear);
-                    if (co2NumeroElement3) co2NumeroElement3.textContent = "Erro";
-                    if (co2DescricaoElement3) co2DescricaoElement3.textContent = "Erro no cálculo base.";
-                    return;
-                }
-
-                if (customStartYear <= currentYearForCalc) {
-                    const segundosAno2025 = segundosTotaisNoAno(currentYearForCalc);
-                    const segundosPassados2025 = segundosDesdeInicioDoAno(currentYearForCalc);
-                    const emissaoAnual2025Mundo = emissoes.mundo.anual;
-
-                    if (segundosAno2025 > 0) {
-                        const emissaoPorSegundo2025 = emissaoAnual2025Mundo / segundosAno2025;
-                        const emitidoEm2025 = emissaoPorSegundo2025 * segundosPassados2025;
-                        if (!isNaN(emitidoEm2025)) {
-                            totalEmitidoDesdeCustomYear += emitidoEm2025;
-                        } else {
-                            console.warn("[Atualizar Custom] emitidoEm2025 for 2025 calculation is NaN.");
-                        }
-                    }
-                }
-                if (co2NumeroElement3) co2NumeroElement3.textContent = formatarNumero(totalEmitidoDesdeCustomYear);
-                if (co2DescricaoElement3) co2DescricaoElement3.textContent = `toneladas de CO₂ emitidas globalmente desde ${customStartYear} até agora`;
+        function atualizarEmissoesCustomYear() {
+            if (customStartYear === null || isNaN(customStartYear)) {
+                if (co2Numero3)    co2Numero3.textContent    = "...";
+                if (co2Descricao3) co2Descricao3.textContent = "Selecione um ano e calcule.";
+                return;
+            }
+            if (isNaN(fixedEmissionsSumForCustomYear)) {
+                if (co2Numero3)    co2Numero3.textContent    = "Erro";
+                if (co2Descricao3) co2Descricao3.textContent = "Erro no cálculo base.";
+                return;
             }
 
-            // Nova função para calcular emissões do agronegócio
-            function calcularEmissoesAgronegocio() {
-                const activity = agroActivityElement.value;
-                const area = parseFloat(agroAreaElement.value);
-                const cattle = parseFloat(agroCattleElement.value);
-
-                if (isNaN(area) || area <= 0) {
-                    agroResultElement.textContent = "Por favor, insira uma área válida.";
-                    return;
-                }
-
-                if (activity === "pecuaria" && (isNaN(cattle) || cattle <= 0)) {
-                    agroResultElement.textContent = "Para pecuária, insira o número de cabeças.";
-                    return;
-                }
-
-                let emissions = 0;
-                let description = "";
-
-                if (activity === "pecuaria") {
-                    emissions = cattle * agroEmissions[activity];
-                    description = `${formatarNumero(emissions)} toneladas de CO₂ equivalente por ano para ${cattle} cabeças de gado`;
-                } else {
-                    emissions = area * agroEmissions[activity];
-                    const activityNames = {
-                        soja: "soja",
-                        milho: "milho",
-                        cana: "cana-de-açúcar"
-                    };
-                    description = `${formatarNumero(emissions)} toneladas de CO₂ equivalente por ano para ${area} hectares de ${activityNames[activity]}`;
-                }
-
-                agroResultElement.textContent = description;
-            }
-
-            // Função para controlar a visibilidade do campo de cabeças de gado
-            function toggleCattleInputVisibility() {
-                if (agroActivityElement.value === 'pecuaria') {
-                    agroCattleGroupElement.style.display = 'flex';
-                    agroCattleElement.disabled = false;
-                    agroAreaElement.placeholder = "Ex: 100 (área da pastagem)";
-                } else {
-                    agroCattleGroupElement.style.display = 'none';
-                    agroCattleElement.disabled = true;
-                    agroCattleElement.value = ''; // Clear value when hidden
-                    agroAreaElement.placeholder = "Ex: 1000";
+            let total = fixedEmissionsSumForCustomYear;
+            if (customStartYear <= 2025) {
+                const seg = segundosTotaisNoAno(2025);
+                if (seg > 0) {
+                    const parte2025 = (emissoes.mundo.anual / seg) * segundosDesdeInicioDoAno(2025);
+                    if (!isNaN(parte2025)) total += parte2025;
                 }
             }
+            if (co2Numero3)    co2Numero3.textContent    = fmt(total);
+            if (co2Descricao3) co2Descricao3.textContent = `toneladas de CO₂ emitidas globalmente desde ${customStartYear} até agora`;
+        }
 
-            // Event listener para habilitar/desabilitar o campo de cabeças de gado
-            if (agroActivityElement && agroCattleGroupElement && agroCattleElement) {
-                agroActivityElement.addEventListener('change', toggleCattleInputVisibility);
-                // Initial call to set correct state on page load
-                toggleCattleInputVisibility(); 
+        // ── Agribusiness calculator ───────────────────────────────────
+        function calcularEmissoesAgronegocio() {
+            const activity = agroActivity.value;
+            const area     = parseFloat(agroArea.value);
+            const cattle   = parseFloat(agroCattle.value);
+
+            if (isNaN(area) || area <= 0) {
+                agroResult.textContent = "Por favor, insira uma área válida.";
+                return;
+            }
+            if (activity === "pecuaria" && (isNaN(cattle) || cattle <= 0)) {
+                agroResult.textContent = "Para pecuária, insira o número de cabeças.";
+                return;
             }
 
-            // Event listener para o botão de calcular emissões do agronegócio
-            if (btnCalcularAgroElement) {
-                btnCalcularAgroElement.addEventListener('click', calcularEmissoesAgronegocio);
+            let emissions, description;
+            if (activity === "pecuaria") {
+                emissions   = cattle * agroEmissions.pecuaria;
+                description = `${fmt(emissions)} toneladas de CO₂ equivalente por ano para ${cattle} cabeças de gado`;
+            } else {
+                emissions = area * agroEmissions[activity];
+                const names = { soja: "soja", milho: "milho", cana: "cana-de-açúcar" };
+                description = `${fmt(emissions)} toneladas de CO₂ equivalente por ano para ${area} hectares de ${names[activity]}`;
             }
-            // Inicialização dos gráficos com elementos centralizados
-            function inicializarGraficos() {
-                // Gráfico 1: Emissões por Cultura (com escala logarítmica)
-                const ctxEmissions = document.getElementById('emissionsChart');
-                if (ctxEmissions) {
-                    new Chart(ctxEmissions, {
-                        type: 'bar',
-                        data: {
-                            labels: ['Soja', 'Milho', 'Cana-de-açúcar', 'Pecuária (por cabeça)'],
-                            datasets: [{
-                                // Removendo o label do dataset, pois a legenda será removida
-                                data: [0.85, 0.72, 0.45, 56.2],
-                                backgroundColor: [
-                                    'rgba(255, 99, 132, 0.7)',
-                                    'rgba(54, 162, 235, 0.7)',
-                                    'rgba(255, 206, 86, 0.7)',
-                                    'rgba(75, 192, 192, 0.7)'
-                                ],
-                                borderColor: [
-                                    'rgba(255, 99, 132, 1)',
-                                    'rgba(54, 162, 235, 1)',
-                                    'rgba(255, 206, 86, 1)',
-                                    'rgba(75, 192, 192, 1)'
-                                ],
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            layout: { // Ajustes de padding para dar espaço ao título do eixo Y e rótulos X
-                                padding: {
-                                    left: 60, // Aumentado para dar espaço ao título do eixo Y (rotacionado)
-                                    right: 20, // Espaço para o último rótulo X não ser cortado
-                                    bottom: 20 // Espaço para os rótulos do eixo X
-                                }
-                            },
-                            plugins: {
-                                legend: {
-                                    display: false // Removendo a legenda completamente
-                                },
-                                title: {
-                                    display: false
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    type: 'logarithmic', // Aplicando escala logarítmica
-                                    beginAtZero: true,
-                                    title: { // Adicionando título ao eixo Y
-                                        display: true,
-                                        text: 'tCO₂eq (Escala Logarítmica)',
-                                        color: 'white',
-                                        font: {
-                                            size: 14,
-                                            weight: 'bold'
-                                        }
-                                    },
-                                    ticks: {
-                                        color: 'white',
-                                        callback: function(value, index, ticks) {
-                                            // Format ticks for better readability on log scale
-                                            // Show powers of 10 and significant values
-                                            if (value === 0.1 || value === 1 || value === 10 || value === 100) {
-                                                return value;
-                                            }
-                                            // For values between powers of 10, show if they are easy to read (e.g., 0.2, 0.5)
-                                            if (value > 0 && value < 100 && (value * 10) % 1 === 0 && (value.toString().length < 4 || value % 5 === 0)) {
-                                                return value;
-                                            }
-                                            return null;
-                                        }
-                                    },
-                                    grid: {
-                                        color: 'rgba(255, 255, 255, 0.1)'
-                                    }
-                                },
-                                x: {
-                                    ticks: {
-                                        color: 'white',
-                                        maxRotation: 45,   // Permitir rotação para etiquetas na diagonal
-                                        minRotation: 45,   // Definir rotação mínima para diagonal
-                                        autoSkip: false,  // Garante que todas as etiquetas sejam exibidas
-                                        font: {
-                                            size: 10 // Reduz o tamanho da fonte para evitar sobreposição
-                                        },
-                                        padding: 5 // Adiciona um pequeno padding entre as etiquetas e o eixo
-                                    },
-                                    grid: {
-                                        color: 'rgba(255, 255, 255, 0.1)'
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
+            agroResult.textContent = description;
+        }
 
-                // Gráfico 2: Área cultivada
-                const ctxArea = document.getElementById('areaChart');
-                if (ctxArea) {
-                    new Chart(ctxArea, {
-                        type: 'doughnut',
-                        data: {
-                            labels: ['Soja', 'Milho', 'Cana-de-açúcar', 'Outras'],
-                            datasets: [{
-                                label: 'Milhões de hectares',
-                                data: [41.2, 21.5, 10.4, 27.1],
-                                backgroundColor: [
-                                    'rgba(255, 99, 132, 0.7)',
-                                    'rgba(54, 162, 235, 0.7)',
-                                    'rgba(255, 206, 86, 0.7)',
-                                    'rgba(153, 102, 255, 0.7)'
-                                ],
-                                borderColor: [
-                                    'rgba(255, 99, 132, 1)',
-                                    'rgba(54, 162, 235, 1)',
-                                    'rgba(255, 206, 86, 1)',
-                                    'rgba(153, 102, 255, 1)'
-                                ],
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    position: 'top',
-                                    labels: {
-                                        color: 'white',
-                                        font: {
-                                            size: 12
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
+        function toggleCattleVisibility() {
+            const isPec = agroActivity.value === 'pecuaria';
+            agroCattleGroup.style.display  = isPec ? 'flex' : 'none';
+            agroCattle.disabled            = !isPec;
+            if (!isPec) agroCattle.value   = '';
+            agroArea.placeholder           = isPec ? "Ex: 100 (área da pastagem)" : "Ex: 1000";
+        }
 
-                // Gráfico 3: Emissões por setor
-                const ctxSector = document.getElementById('sectorChart');
-                if (ctxSector) {
-                    new Chart(ctxSector, {
-                        type: 'pie',
-                        data: {
-                            labels: ['Pecuária', 'Soja', 'Cana-de-açúcar', 'Outras culturas'],
-                            datasets: [{
-                                label: 'Milhões de tCO₂eq',
-                                data: [415, 125, 85, 75],
-                                backgroundColor: [
-                                    'rgba(255, 99, 132, 0.7)',
-                                    'rgba(54, 162, 235, 0.7)',
-                                    'rgba(255, 206, 86, 0.7)',
-                                    'rgba(75, 192, 192, 0.7)'
-                                ],
-                                borderColor: [
-                                    'rgba(255, 99, 132, 1)',
-                                    'rgba(54, 162, 235, 1)',
-                                    'rgba(255, 206, 86, 1)',
-                                    'rgba(75, 192, 192, 1)'
-                                ],
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    position: 'top',
-                                    labels: {
-                                        color: 'white',
-                                        font: {
-                                            size: 12
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
-
-                // Gráfico 4: Comparação Agronegócio vs Agricultura Familiar
-                const ctxComparison = document.getElementById('comparisonChart');
-                if (ctxComparison) {
-                    new Chart(ctxComparison, {
-                        type: 'bar',
-                        data: {
-                            labels: ['Produção de Alimentos', 'Emprego', 'Uso da Terra', 'Emissões por hectare'],
-                            datasets: [
-                                {
-                                    label: 'Agronegócio',
-                                    data: [70, 20, 75, 80],
-                                    backgroundColor: 'rgba(255, 99, 132, 0.7)',
-                                    borderColor: 'rgba(255, 99, 132, 1)',
-                                    borderWidth: 1
-                                },
-                                {
-                                    label: 'Agricultura Familiar',
-                                    data: [30, 80, 25, 20],
-                                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                                    borderColor: 'rgba(54, 162, 235, 1)',
-                                    borderWidth: 1
-                                }
-                            ]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    max: 100,
-                                    ticks: {
-                                        color: 'white'
-                                    },
-                                    grid: {
-                                        color: 'rgba(255, 255, 255, 0.1)'
-                                    }
-                                },
-                                x: {
-                                    ticks: {
-                                        color: 'white'
-                                    },
-                                    grid: {
-                                        color: 'rgba(255, 255, 255, 0.1)'
-                                    }
-                                }
-                            },
-                            plugins: {
-                                legend: {
-                                    position: 'top',
-                                    labels: {
-                                        color: 'white',
-                                        font: {
-                                            size: 12
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
-            }
-
-            // Configuração inicial
-            console.log("Setting up event listeners...");
-            if (botoesRegiaoContainer) botoesRegiaoContainer.addEventListener('click', aoClicarBotaoRegiao);
-            if (botoesHistoricoContainer) botoesHistoricoContainer.addEventListener('click', aoClicarBotaoHistorico);
-            if (btnCalcularAnoElement) btnCalcularAnoElement.addEventListener('click', aoCalcularAnoCustomizado);
-
-            console.log("Initial page setup...");
-            mudarPaginaRegiao(paginaAtualRegiao);
-            mudarPaginaHistorico(paginaAtualHistorico);
-            atualizarRelogio();
-
-            console.log("Populating year dropdown...");
-            populateYearDropdown(); // Popula o dropdown com o novo range
-
-            console.log("Attempting initial calculation for custom year section with default value (which is now guaranteed to be >= 1750)...");
-            aoCalcularAnoCustomizado(); // Realiza o cálculo inicial com o ano de início corrigido
-
-            console.log("Initializing charts...");
-            inicializarGraficos();
-
-            console.log("Starting intervals...");
-            setInterval(() => {
-                atualizarEmissoesRegiao();
-                atualizarEmissoesHistorico();
-                atualizarEmissoesCustomYear(); // Mantém a atualização a cada segundo
-                atualizarRelogio();
-            }, 1000);
-
-            iniciarTrocaAutomaticaRegiao();
-            iniciarTrocaAutomaticaHistorico();
-
-            console.log("Script initialization complete.");
+        // ── Event listeners ───────────────────────────────────────────
+        botoesRegiaoEl?.addEventListener('click', e => {
+            const p = e.target.dataset.pagina;
+            if (p) { clearInterval(intervaloTroca1); intervaloTroca1 = null; mudarPaginaRegiao(p); }
         });
+
+        botoesHistEl?.addEventListener('click', e => {
+            const p = e.target.dataset.pagina2;
+            if (p) { clearInterval(intervaloTroca2); intervaloTroca2 = null; mudarPaginaHistorico(p); }
+        });
+
+        btnCalcularAno?.addEventListener('click', aoCalcularAnoCustomizado);
+        btnCalcularAgro?.addEventListener('click', calcularEmissoesAgronegocio);
+
+        if (agroActivity && agroCattleGroup && agroCattle) {
+            agroActivity.addEventListener('change', toggleCattleVisibility);
+            toggleCattleVisibility();
+        }
+
+        // ── Init ──────────────────────────────────────────────────────
+        mudarPaginaRegiao(paginaAtualRegiao);
+        mudarPaginaHistorico(paginaAtualHistorico);
+        atualizarRelogio();
+        populateYearDropdown();
+        aoCalcularAnoCustomizado();
+
+        setInterval(() => {
+            atualizarEmissoesRegiao();
+            atualizarEmissoesHistorico();
+            atualizarEmissoesCustomYear();
+            atualizarRelogio();
+        }, 1000);
+
+        iniciarTrocaAutomaticaRegiao();
+        iniciarTrocaAutomaticaHistorico();
+    });
     </script>
 </body>
 </html>

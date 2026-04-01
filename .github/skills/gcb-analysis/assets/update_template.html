@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrackAir - GCB Insights</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css"> <!-- Assuming existing styles -->
+</head>
+<body>
+    <header>
+        <h1>TrackAir: Carbon Tracking with GCB 2025 Insights</h1>
+    </header>
+    <main>
+        <section id="gcb-summary">
+            <h2>Global Carbon Budget 2025 Summary</h2>
+            <p>Based on the latest GCB report, global CO2 emissions in 2023 were approximately [insert data] GtCO2. Projections indicate [insert projection].</p>
+            <p>Source: Global Carbon Project, 2025.</p>
+        </section>
+        <section id="interactive-chart">
+            <h2>Emissions Trend</h2>
+            <canvas id="emissionsChart" width="400" height="200"></canvas>
+        </section>
+        <section id="comparison">
+            <h2>Compare with Local Data</h2>
+            <p>Integrate local air quality data here for comparison.</p>
+        </section>
+    </main>
+    <footer>
+        <p>Data sourced from GCB 2025. For more details, visit the Global Carbon Project.</p>
+    </footer>
+    <script src="chart_generator.js"></script>
+    <script>
+        // Load data dynamically or from extracted GCB data
+        const emissionsData = { labels: ['2010', '2015', '2020', '2023'], values: [35, 38, 42, 43.5] };
+        generateCarbonChart(emissionsData, 'emissionsChart');
+    </script>
+</body>
+</html>

@@ -3,41 +3,73 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TrackAir - Monitoramento Ambiental</title>
+<title>Track.air - Monitoramento Ambiental</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link rel="icon" type="image/png" href="https://i.ibb.co/N2Dc3q53/logo.png">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="https://i.ibb.co/kVWV8Ssw/trackair-kw.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;900&family=Segoe+UI:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rubik:wght@700;900&display=swap" rel="stylesheet">
 
 <style>
   :root {
-    --bg-gradient: linear-gradient(60deg, rgba(23, 13, 194, 1) 0%, rgba(41, 41, 237, 1) 50%, rgba(0, 212, 255, 1) 100%);
+    --clr-bg-start:   #0d0b2e;
+    --clr-bg-mid:     #1a1aee;
+    --clr-bg-end:     #00c8f0;
+    --clr-text:       #ffffff;
+    --clr-text-muted: rgba(255,255,255,0.65);
+    --clr-accent:     #00d4ff;
+    --clr-card-bg:    rgba(255,255,255,0.08);
+    --clr-card-border:rgba(255,255,255,0.12);
+    --clr-btn-bg:     rgba(255,255,255,0.15);
+    --clr-btn-hover:  rgba(255,255,255,0.28);
+    --clr-btn-active: rgba(255,255,255,0.60);
+    --clr-input-bg:   rgba(0,0,0,0.35);
+    --clr-header-bg:  rgba(8,6,40,0.75);
+
+    --radius-sm:  8px;
+    --radius-md:  14px;
+    --radius-lg:  22px;
+
+    --shadow-card: 0 8px 32px rgba(0,0,0,0.35);
+    --shadow-btn:  0 2px 8px  rgba(0,0,0,0.20);
+
+    --font-body:    'Inter', system-ui, sans-serif;
+    --font-display: 'Rubik', sans-serif;
+
+    --header-h: 68px;
+    --max-w:    860px;
   }
 
   body {
     margin: 0;
     padding: 0;
-    font-family: 'Inter', sans-serif;
-    color: #fff;
-    background: var(--bg-gradient);
+    font-family: var(--font-body);
+    color: var(--clr-text);
+    background: linear-gradient(135deg,
+        var(--clr-bg-start) 0%,
+        var(--clr-bg-mid)   55%,
+        var(--clr-bg-end)   100%);
     background-attachment: fixed;
-    overflow-x: hidden;
+    min-height: 100vh;
+    padding-top: var(--header-h);
   }
 
   header {
-    width: 100%;
-    text-align: center;
-    padding: 2rem 0 1rem 0;
-    backdrop-filter: blur(6px);
+    position: fixed; inset: 0 0 auto 0; height: var(--header-h);
+    background: rgba(8,6,40,0.75); backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px; border-bottom: 1px solid rgba(255,255,255,0.1); z-index: 1000;
   }
 
-  h1 {
-    font-size: 2.3rem;
-    font-weight: 600;
-    text-shadow: 0 0 15px rgba(255,255,255,0.2);
+  .header-logo { font-family: 'Rubik', sans-serif; font-weight: 900; font-size: 1.75rem; letter-spacing: -0.5px; }
+  .header-logo .dot { color: var(--clr-accent); }
+  .nav-card { display: flex; align-items: center; gap: 10px; }
+  .nav-link { 
+    background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.2); 
+    padding: 9px 14px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 0.95rem;
+    transition: background 0.2s;
   }
+  .nav-link:hover { background: rgba(255,255,255,0.30); }
 
   main {
     display: grid;
@@ -50,11 +82,15 @@
   .card {
     width: 90%;
     max-width: 600px;
-    background: rgba(255,255,255,0.08);
-    border-radius: 20px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-    padding: 25px;
+    background: var(--clr-card-bg);
+    border: 1px solid var(--clr-card-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    padding: 32px 36px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    text-align: center;
   }
   .back{
     align-self:flex-start;
@@ -76,34 +112,20 @@
   footer {
     text-align: center;
     font-size: 0.8rem;
-    opacity: 0.7;
+    color: var(--clr-text-muted);
     margin-bottom: 20px;
   }
-  :root {
-            --text-color: white;
-            --bg-gradient: linear-gradient(60deg, rgba(23, 13, 194, 1) 0%, rgba(41, 41, 237, 1) 50%, rgba(0, 212, 255, 1) 100%);
-            --header-bg: rgba(0, 0, 0, 0.65);
-            --section-bg: rgba(255, 255, 255, 0.1);
-            --section-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-            --button-bg: rgba(255, 255, 255, 0.2);
-            --button-bg-hover: rgba(255, 255, 255, 0.35);
-            --button-bg-active: rgba(255, 255, 255, 0.6);
-            --button-radius: 10px;
-            --section-radius: 20px;
-            --widget-bg: rgba(255, 255, 255, 0.1);
-            --widget-bg-hover: rgba(255, 255, 255, 0.2);
-            --widget-radius: 8px;
-
-            --font-primary: 'Segoe UI', sans-serif;
-            --font-display: 'Rubik', sans-serif;
-
-            --header-height: 70px;
-        }
 </style>
 </head>
 <body>
   <header>
-    <a href="index.html" class="back">Voltar</a><h1 class="title">TrackAir • Monitoramento</h1>
+    <div class="header-logo">Track<span class="dot">.</span>air</div>
+    <div class="nav-card">
+      <a class="nav-link" href="index.html">Home</a>
+      <a class="nav-link" href="live-ic.html">Live</a>
+      <a class="nav-link" href="3d-info.html">3D</a>
+      <a class="nav-link" href="comparativo.html">Comparativo</a>
+    </div>
   </header>
 
   <main>

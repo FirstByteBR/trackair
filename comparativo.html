@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Track.air - Comparativo de Dados</title>
+    <link rel="icon" type="image/png" href="https://i.ibb.co/kVWV8Ssw/trackair-kw.jpg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rubik:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        /* ── Design Tokens ─────────────────────────────────────────── */
+        :root {
+            --clr-bg-start:   #0d0b2e;
+            --clr-bg-mid:     #1a1aee;
+            --clr-bg-end:     #00c8f0;
+            --clr-text:       #ffffff;
+            --clr-text-muted: rgba(255,255,255,0.65);
+            --clr-accent:     #00d4ff;
+            --clr-card-bg:    rgba(255,255,255,0.08);
+            --clr-card-border:rgba(255,255,255,0.12);
+            --clr-btn-bg:     rgba(255,255,255,0.15);
+            --clr-btn-hover:  rgba(255,255,255,0.28);
+            --clr-btn-active: rgba(255,255,255,0.60);
+            --clr-input-bg:   rgba(0,0,0,0.35);
+            --clr-header-bg:  rgba(8,6,40,0.75);
+
+            --radius-sm:  8px;
+            --radius-md:  14px;
+            --radius-lg:  22px;
+
+            --shadow-card: 0 8px 32px rgba(0,0,0,0.35);
+            --shadow-btn:  0 2px 8px  rgba(0,0,0,0.20);
+
+            --font-body:    'Inter', system-ui, sans-serif;
+            --font-display: 'Rubik', sans-serif;
+
+            --header-h: 68px;
+            --max-w:    860px;
+        }
+
+        /* ── Reset & Base ──────────────────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-body);
+            color: var(--clr-text);
+            background: linear-gradient(135deg,
+                var(--clr-bg-start) 0%,
+                var(--clr-bg-mid)   55%,
+                var(--clr-bg-end)   100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            padding-top: var(--header-h);
+        }
+
+        /* ── Header ────────────────────────────────────────────────── */
+        header {
+            position: fixed; inset: 0 0 auto 0; height: var(--header-h);
+            background: rgba(8,6,40,0.75); backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; border-bottom: 1px solid rgba(255,255,255,0.1); z-index: 1000;
+        }
+        .header-logo { font-family: 'Rubik', sans-serif; font-weight: 900; font-size: 1.75rem; letter-spacing: -0.5px; }
+        .header-logo .dot { color: var(--clr-accent); }
+        .nav-card { display: flex; align-items: center; gap: 10px; }
+        .nav-link { 
+            background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.2); 
+            padding: 9px 14px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 0.95rem;
+            transition: background 0.2s;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.30); }
+
+        /* ── Main Layout ───────────────────────────────────────────── */
+        main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 36px 20px 60px;
+            gap: 24px;
+        }
+
+        /* ── Cards ─────────────────────────────────────────────────── */
+        .card {
+            background: var(--clr-card-bg);
+            border: 1px solid var(--clr-card-border);
+            border-radius: var(--radius-lg);
+            padding: 32px 36px;
+            max-width: var(--max-w);
+            width: 100%;
+            box-shadow: var(--shadow-card);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .section-title { font-size: 1.35rem; margin-bottom: 14px; }
+        .desc { color: var(--clr-text-muted); line-height: 1.6; }
+        .chart-wrapper { width: 100%; height: 420px; }
+        @media (max-width: 768px) { .chart-wrapper { height: 320px; } }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header>
+        <div class="header-logo">Track<span class="dot">.</span>air</div>
+        <div class="nav-card">
+            <a class="nav-link" href="index.html">Home</a>
+            <a class="nav-link" href="live-ic.html">Live</a>
+            <a class="nav-link" href="3d-info.html">3D</a>
+            <a class="nav-link" href="comparativo.html">Comparativo</a>
+        </div>
+    </header>
+    <main>
+        <div class="card">
+            <h1 class="section-title">Comparativo de emissões (GCB 2025 vs Legacy + projeção 2026)</h1>
+            <p class="desc">Gráfico estático com dados fixos: histórico de 1817/1925 até projeção 2026, sem atualização dinâmica. Os valores são em gigatoneladas CO₂.</p>
+            <div class="chart-wrapper">
+                <canvas id="comparativoChart"></canvas>
+            </div>
+        </div>
+        <div class="card">
+            <h2 class="section-title">Resumo</h2>
+            <ul class="desc">
+                <li>GCB 2025: 38.1 Gt CO₂</li>
+                <li>Legacy 2025: 37.4 Gt CO₂</li>
+                <li>Projeção 2026: 38.7 Gt CO₂</li>
+                <li>Investigar discrepância ±1.8% entre GCB e TrackAir.</li>
+            </ul>
+        </div>
+    </main>
+    <script>
+        const ctx = document.getElementById('comparativoChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['1817', '1925', '2024', '2025 Legacy', '2025 GCB', '2026 Projeção'],
+                datasets: [
+                    {
+                        label: 'Emissões históricas (Gt CO₂)',
+                        data: [6.5, 10.8, 37.2, 37.4, 38.1, 38.7],
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.25)',
+                        fill: false,
+                        tension: 0.2,
+                        pointRadius: 5
+                    },
+                    {
+                        label: 'Discrepância (2025)',
+                        data: [null, null, null, 0, 0.7, 1.3],
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.25)',
+                        borderDash: [6, 4],
+                        fill: false,
+                        tension: 0.2,
+                        pointRadius: 5
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: '#fff' } }
+                },
+                scales: {
+                    x: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                    y: { beginAtZero: true, ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

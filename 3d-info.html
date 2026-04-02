@@ -82,6 +82,22 @@
 
             --header-height: 70px;
         }
+
+        /* --- Source Toggle --- */
+        .source-overlay {
+            position: fixed; top: 85px; left: 50%; transform: translateX(-50%);
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+            z-index: 102; pointer-events: auto;
+        }
+        .source-label { font-size: 0.75rem; font-weight: 600; color: rgba(0,0,0,0.6); text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn-group { display: flex; background: rgba(0,0,0,0.1); padding: 3px; border-radius: 12px; backdrop-filter: blur(4px); }
+        .btn {
+            background: transparent; color: rgba(0,0,0,0.6); border: none;
+            padding: 6px 14px; border-radius: 9px; cursor: pointer;
+            font-size: 0.8rem; font-weight: 600; transition: all 0.2s;
+        }
+        .btn:hover { background: rgba(255,255,255,0.3); }
+        .btn.active { background: #fff; color: #000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
@@ -96,6 +112,15 @@
     </header>
     <div id="loading" class="loading-overlay">Loading Font...</div>
     <canvas id="webglCanvas" style="margin-top:0;"></canvas>
+    
+    <div class="source-overlay">
+        <span class="source-label">Source:</span>
+        <div class="btn-group" id="botoesFonte">
+            <button class="btn" id="btnLegacy" data-fonte="legacy">Legacy</button>
+            <button class="btn active" id="btnGCB" data-fonte="gcb">GCB 2025</button>
+        </div>
+    </div>
+
     <div id="arrow-left" class="nav-arrow"><</div>
     <div id="arrow-right" class="nav-arrow">></div>
     <div class="logo-container">
@@ -131,10 +156,32 @@
 
         // --- Data Stores & State ---
         const emissoesLegacy = { mundo: { annual: 37.4e9, titulo: "Global CO2 Emissions (TrackAir legacy)", legenda: "Legacy 2025: 37.4b tons" }, brasil: { annual: 1.3e9, titulo: "Brazil CO2 Emissions (legacy)", legenda: "Legacy 2025: 1.3b tons" }, parana: { annual: 62.5e6, titulo: "Parana CO2 Emissions (legacy)", legenda: "Legacy 2025: 62.5m tons" }, curitiba: { annual: 8.1e6, titulo: "Curitiba CO2 Emissions (legacy)", legenda: "Legacy 2025: 8.1m tons" } };
-        const emissoesGCB = { mundo: { annual: 38.1e9, titulo: "Global CO2 Emissions (GCB 2025)", legenda: "GCB 2025: 38.1b tons" }, brasil: { annual: 1.22e9, titulo: "Brazil CO2 Emissions (GCB)", legenda: "GCB 2025: 1.22b tons" }, parana: { annual: 63.0e6, titulo: "Parana CO2 Emissions (GCB)", legenda: "GCB 2025: 63.0m tons" }, curitiba: { annual: 8.2e6, titulo: "Curitiba CO2 Emissions (GCB)", legenda: "GCB 2025: 8.2m tons" } };
-        const emissoes = emissoesGCB;
-        const emissoesHistorico = { Marista: { titulo: "Since Marista (1817)", baseAte2025: 1848365645658.47, global2025: emissoesGCB.mundo.annual }, Santa: { titulo: "Since Santa Maria (1925)", baseAte2025: 1732301526553.08, global2025: emissoesGCB.mundo.annual } };
+        const emissoesGCB = { mundo: { annual: 38.1e9, titulo: "Global CO2 Emissions (GCB 2025)", legenda: "GCB 2025: 38.1b tons" }, brasil: { annual: 2.145e9, titulo: "Brazil GHG Emissions (SEEG 2024)", legenda: "SEEG 2024: 2.145b tons CO2e" }, parana: { annual: 69.32e6, titulo: "Parana GHG Emissions (SEEG 2024)", legenda: "SEEG 2024: 69.32m tons CO2e" }, curitiba: { annual: 8.2e6, titulo: "Curitiba CO2 Emissions (GCB/SEEG)", legenda: "Regional estimate: 8.2m tons" } };
+        let emissoes = emissoesGCB;
+        let emissoesHistorico = { Marista: { titulo: "Since Marista (1817)", baseAte2025: 1848365645658.47, global2025: emissoesGCB.mundo.annual }, Santa: { titulo: "Since Santa Maria (1925)", baseAte2025: 1732301526553.08, global2025: emissoesGCB.mundo.annual } };
         let paginaAtualRegiao = "mundo"; let paginaAtualHistorico = "Marista"; let currentFocus = 'region';
+
+        // --- Source switching ---
+        function mudarFonte(fonte) {
+            if (fonte === 'legacy') {
+                emissoes = emissoesLegacy;
+            } else {
+                emissoes = emissoesGCB;
+            }
+            
+            // Update historical global values
+            emissoesHistorico.Marista.global2025 = emissoes.mundo.annual;
+            emissoesHistorico.Santa.global2025   = emissoes.mundo.annual;
+
+            // Update UI
+            document.querySelectorAll('.source-overlay .btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.fonte === fonte);
+            });
+
+            // Update 3D Display
+            updateRegionDisplay();
+            updateHistoryDisplay();
+        }
 
         // --- Groups ---
         let regionPedestalGroup, historyPedestalGroup; let regionDisplayGroup, historyDisplayGroup;
@@ -177,6 +224,10 @@
 
             window.addEventListener('resize', onWindowResize); window.addEventListener('pointermove', onPointerMove); window.addEventListener('click', onClick);
             document.getElementById('arrow-left').addEventListener('click', () => switchFocus('left')); document.getElementById('arrow-right').addEventListener('click', () => switchFocus('right'));
+            document.getElementById('botoesFonte').addEventListener('click', (e) => {
+                const f = e.target.dataset.fonte;
+                if (f) mudarFonte(f);
+            });
         }
 
         // --- Create Scene Elements Function ---

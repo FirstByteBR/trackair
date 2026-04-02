@@ -84,6 +84,32 @@
             margin-left: 10px;
         }
 
+        /* ── Source Switcher ───────────────────────────────────────── */
+        .source-switcher-container {
+            display: flex;
+            justify-content: center;
+            padding: 20px 20px 0;
+            z-index: 10;
+        }
+        .source-switcher {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0,0,0,0.25);
+            padding: 12px 20px;
+            border-radius: var(--radius-lg);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .source-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--clr-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
         /* ── Main Layout ───────────────────────────────────────────── */
         main {
             display: flex;
@@ -476,19 +502,29 @@
         </div>
     </header>
 
+    <div class="source-switcher-container">
+        <div class="source-switcher">
+            <span class="source-label">Fonte de Dados</span>
+            <div class="btn-group" id="botoesFonte" style="margin-top: 0;">
+                <button class="btn" style="padding: 5px 12px; font-size: 0.75rem;" id="btnLegacy" data-fonte="legacy">Legacy</button>
+                <button class="btn active" style="padding: 5px 12px; font-size: 0.75rem;" id="btnGCB" data-fonte="gcb">GCB 2025 + SEEG</button>
+            </div>
+        </div>
+    </div>
+
     <main>
 
-        <!-- ── Real-time Regional Emissions ────────────────────────── -->
+        <!-- ── Real-time 2026 Emissions ────────────────────────── -->
         <div class="card">
-            <div class="section-label">Tempo Real</div>
+            <div class="section-label">Tempo Real 2026</div>
             <div class="section-title" id="tituloPagina">Emissões Globais de CO₂</div>
 
             <div class="counter-wrap">
                 <span class="counter-value" id="co2Numero" aria-live="polite">...</span>
-                <span class="counter-unit" id="co2Descricao">toneladas emitidas até agora em 2025</span>
+                <span class="counter-unit" id="co2Descricao">toneladas emitidas até agora em 2026</span>
             </div>
 
-            <div class="counter-note" id="co2Legenda">Estimativa para 2025: 37,4 bilhões de toneladas</div>
+            <div class="counter-note" id="co2Legenda">Projeção GCB para 2026: ~38,5 bilhões de toneladas</div>
 
             <div class="divider"></div>
 
@@ -620,16 +656,16 @@
             curitiba: { anual: 8.1e6,   titulo: "Emissões de CO₂ de Curitiba (Legacy)",             legenda: "TrackAir antigo 2025: 8,1 milhões de toneladas" }
         };
 
-        // GCB 2025 updated official values (or projections)
+        // GCB 2025 updated official values + SEEG 2024 for Brazil/Regional
         const emissoesGCB = {
-            mundo:    { anual: 38.1e9, titulo: "Emissões Globais de CO₂ (GCB 2025)",           legenda: "GCB 2025 report: 38,1 bilhões de toneladas" },
-            brasil:   { anual: 1.22e9, titulo: "Emissões de CO₂ do Brasil (GCB)",              legenda: "GCB 2025 estimate: 1,22 bilhão de toneladas" },
-            parana:   { anual: 63.0e6, titulo: "Emissões de CO₂ do Paraná (GCB)",              legenda: "GCB 2025 regional estimate: 63,0 milhões de toneladas" },
-            curitiba: { anual: 8.2e6,  titulo: "Emissões de CO₂ de Curitiba (GCB)",            legenda: "GCB 2025 regional estimate: 8,2 milhões de toneladas" }
+            mundo:    { anual: 38.1e9,  titulo: "Emissões Globais de CO₂ (GCB 2025)",           legenda: "GCB 2025 report: 38,1 bilhões de toneladas" },
+            brasil:   { anual: 2.145e9, titulo: "Emissões de GEE do Brasil (SEEG 2024)",       legenda: "SEEG 2024: 2,145 bilhões de toneladas CO₂e" },
+            parana:   { anual: 69.32e6, titulo: "Emissões de GEE do Paraná (SEEG 2024)",       legenda: "SEEG 2024: 69,32 milhões de toneladas CO₂e" },
+            curitiba: { anual: 8.2e6,   titulo: "Emissões de CO₂ de Curitiba (GCB/SEEG)",       legenda: "Estimativa regional: 8,2 milhões de toneladas" }
         };
 
         // Default app now uses GCB updated data but keeps legacy data nearby
-        const emissoes = emissoesGCB;
+        let emissoes = emissoesGCB;
 
         const emissoesHistorico = {
             Marista: { titulo: "Emissões Globais de CO₂ desde a criação do Marista (1817)", baseAte2025: 1848365645658.47, global2025: emissoesGCB.mundo.anual },
@@ -646,12 +682,16 @@
         let fixedEmissionsSumForCustomYear = 0;
 
         // DOM refs
+        const botoesFonteEl  = document.getElementById("botoesFonte");
+        const botoesFonte    = botoesFonteEl?.querySelectorAll(".btn") ?? [];
         const co2Numero      = document.getElementById("co2Numero");
         const co2Descricao   = document.getElementById("co2Descricao");
         const tituloPagina   = document.getElementById("tituloPagina");
         const co2Legenda     = document.getElementById("co2Legenda");
         const botoesRegiaoEl = document.getElementById("botoesRegiao");
         const botoesRegiao   = botoesRegiaoEl?.querySelectorAll(".btn") ?? [];
+
+        const co2Numero2026  = document.getElementById("co2Numero2026");
 
         const co2Numero2      = document.getElementById("co2Numero2");
         const co2Descricao2   = document.getElementById("co2Descricao2");
@@ -697,22 +737,62 @@
             return n.toLocaleString('pt-BR', { maximumFractionDigits: 0, useGrouping: true });
         }
 
+        // ── Source switching ─────────────────────────────────────────
+        function mudarFonte(fonte) {
+            if (fonte === 'legacy') {
+                emissoes = emissoesLegacy;
+            } else {
+                emissoes = emissoesGCB;
+            }
+            
+            // Update historical global values based on new source
+            emissoesHistorico.Marista.global2025 = emissoes.mundo.anual;
+            emissoesHistorico.Santa.global2025   = emissoes.mundo.anual;
+
+            // Update UI buttons
+            botoesFonte.forEach(btn => {
+                btn.classList.toggle("active", btn.dataset.fonte === fonte);
+            });
+
+            // Refresh current displays
+            if (tituloPagina) tituloPagina.textContent = emissoes[paginaAtualRegiao].titulo;
+            if (co2Legenda) {
+                const base = emissoes[paginaAtualRegiao].anual;
+                const proj2026 = base * 1.011;
+                const unidade = proj2026 >= 1e9 ? "bilhões" : "milhões";
+                const divisor = proj2026 >= 1e9 ? 1e9 : 1e6;
+                co2Legenda.textContent = `Projeção para 2026: ~${(proj2026 / divisor).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} ${unidade} de toneladas`;
+            }
+            
+            atualizarEmissoesRegiao();
+            atualizarEmissoesHistorico();
+            atualizarEmissoesCustomYear();
+        }
+
         // ── Update functions ─────────────────────────────────────────
         function atualizarEmissoesRegiao() {
-            const y = 2025;
+            const y = 2026;
             const seg = segundosTotaisNoAno(y);
             if (!seg) return;
-            const emitido = (emissoes[paginaAtualRegiao].anual / seg) * segundosDesdeInicioDoAno(y);
+            
+            // Apply +1.1% growth trend from GCB to 2025 base values
+            const base2025 = emissoes[paginaAtualRegiao].anual;
+            const proj2026 = base2025 * 1.011;
+            
+            const emitido = (proj2026 / seg) * segundosDesdeInicioDoAno(y);
             if (co2Numero)    co2Numero.textContent    = fmt(emitido);
             if (co2Descricao) co2Descricao.textContent = `toneladas emitidas até agora em ${y}`;
         }
 
         function atualizarEmissoesHistorico() {
-            const y = 2025;
+            const y = 2026;
             const seg = segundosTotaisNoAno(y);
             if (!seg) return;
             const d = emissoesHistorico[paginaAtualHistorico];
-            const emitidoTotal = d.baseAte2025 + (d.global2025 / seg) * segundosDesdeInicioDoAno(y);
+            
+            // baseAte2025 + 2025 full + 2026 partial
+            const emitidoTotal = d.baseAte2025 + d.global2025 + ((d.global2025 * 1.011) / seg) * segundosDesdeInicioDoAno(y);
+            
             if (co2Numero2)  co2Numero2.textContent  = fmt(emitidoTotal);
             if (co2Descricao2) {
                 co2Descricao2.textContent = paginaAtualHistorico === "Santa"
@@ -732,7 +812,13 @@
             if (!emissoes[pagina] || pagina === paginaAtualRegiao) return;
             paginaAtualRegiao = pagina;
             if (tituloPagina) tituloPagina.textContent = emissoes[pagina].titulo;
-            if (co2Legenda)   co2Legenda.textContent   = emissoes[pagina].legenda;
+            if (co2Legenda) {
+                const base = emissoes[pagina].anual;
+                const proj2026 = base * 1.011;
+                const unidade = proj2026 >= 1e9 ? "bilhões" : "milhões";
+                const divisor = proj2026 >= 1e9 ? 1e9 : 1e6;
+                co2Legenda.textContent = `Projeção para 2026: ~${(proj2026 / divisor).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} ${unidade} de toneladas`;
+            }
             botoesRegiao.forEach(btn => {
                 btn.classList.toggle("active", btn.dataset.pagina === pagina);
             });
@@ -842,14 +928,18 @@
                 return;
             }
 
-            let total = fixedEmissionsSumForCustomYear;
-            if (customStartYear <= 2025) {
-                const seg = segundosTotaisNoAno(2025);
-                if (seg > 0) {
-                    const parte2025 = (emissoes.mundo.anual / seg) * segundosDesdeInicioDoAno(2025);
-                    if (!isNaN(parte2025)) total += parte2025;
-                }
+            let total = fixedEmissionsSumForCustomYear; // includes up to end of 2024
+            
+            // Add full 2025 + partial 2026
+            const base2025 = emissoes.mundo.anual;
+            total += base2025; // Full 2025
+
+            const seg2026 = segundosTotaisNoAno(2026);
+            if (seg2026 > 0) {
+                const parte2026 = ((base2025 * 1.011) / seg2026) * segundosDesdeInicioDoAno(2026);
+                if (!isNaN(parte2026)) total += parte2026;
             }
+
             if (co2Numero3)    co2Numero3.textContent    = fmt(total);
             if (co2Descricao3) co2Descricao3.textContent = `toneladas de CO₂ emitidas globalmente desde ${customStartYear} até agora`;
         }
@@ -890,6 +980,11 @@
         }
 
         // ── Event listeners ───────────────────────────────────────────
+        botoesFonteEl?.addEventListener('click', e => {
+            const f = e.target.dataset.fonte;
+            if (f) { mudarFonte(f); }
+        });
+
         botoesRegiaoEl?.addEventListener('click', e => {
             const p = e.target.dataset.pagina;
             if (p) { clearInterval(intervaloTroca1); intervaloTroca1 = null; mudarPaginaRegiao(p); }

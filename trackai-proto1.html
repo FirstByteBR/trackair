@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0d0b2e">
+  <meta name="description" content="Monitoramento de CO₂ em tempo real pela estação Track.air CWB-001.">
+  <title>Track.AI · Sonda CWB-001</title>
+  <link rel="icon" type="image/png" href="https://i.ibb.co/kVWV8Ssw/trackair-kw.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Rubik:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg-0: #0b0928;
+      --bg-1: #1818a9;
+      --bg-2: #00aeca;
+      --text: #fff;
+      --muted: rgba(255,255,255,.68);
+      --faint: rgba(255,255,255,.42);
+      --accent: #41e7ff;
+      --accent-2: #8c85ff;
+      --good: #4af0a3;
+      --bad: #a6a9bb;
+      --glass: rgba(255,255,255,.075);
+      --glass-strong: rgba(10,12,48,.48);
+      --border: rgba(255,255,255,.14);
+      --radius: 24px;
+      --shadow: 0 18px 55px rgba(0,0,0,.25);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0; min-height: 100vh; color: var(--text);
+      font-family: Inter, system-ui, sans-serif;
+      background:
+        radial-gradient(ellipse at 8% 5%, rgba(76,59,255,.34), transparent 36%),
+        radial-gradient(ellipse at 92% 24%, rgba(0,230,255,.18), transparent 32%),
+        linear-gradient(135deg, var(--bg-0) 0%, #11115b 48%, #073b68 100%);
+      background-attachment: fixed;
+    }
+    button, input { font: inherit; }
+    button, a, input { -webkit-tap-highlight-color: transparent; }
+    a { color: inherit; }
+    .topbar {
+      position: sticky; top: 0; z-index: 20; min-height: 70px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      padding: 12px clamp(18px, 4vw, 56px);
+      border-bottom: 1px solid rgba(255,255,255,.12);
+      background: rgba(7,7,34,.72); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    }
+    .brand { display: inline-flex; align-items: center; gap: 11px; text-decoration: none; min-width: max-content; }
+    .brand-mark {
+      display: grid; place-items: center; width: 38px; height: 38px; border-radius: 13px;
+      color: #05152a; font-weight: 900; background: linear-gradient(135deg, #6b70ff, #42e8ff);
+      box-shadow: 0 5px 22px rgba(54,215,255,.24);
+    }
+    .brand-word { font: 900 1.55rem Rubik, sans-serif; letter-spacing: -.07em; }
+    .brand-word span { color: var(--accent); }
+    .top-tag { color: var(--muted); font-size: .8rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+    main { width: min(1160px, calc(100% - 32px)); margin: 0 auto; padding: 42px 0 54px; }
+    .eyebrow { display: flex; align-items: center; gap: 9px; color: var(--accent); font-size: .76rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    .eyebrow::before { content: ''; width: 24px; height: 2px; background: currentColor; border-radius: 5px; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin: 12px 0 12px; font: 800 clamp(2.25rem, 5.5vw, 4.4rem)/1.02 Rubik, sans-serif; letter-spacing: -.055em; }
+    h1 .gradient-text { color: transparent; background: linear-gradient(95deg, #fff 5%, #86f0ff 58%, #9995ff 100%); background-clip: text; -webkit-background-clip: text; }
+    .intro { max-width: 690px; color: var(--muted); line-height: 1.7; font-size: 1rem; margin-bottom: 0; }
+    .hero { padding: 10px 0 30px; }
+    .panel {
+      background: linear-gradient(135deg, rgba(255,255,255,.095), rgba(255,255,255,.045));
+      border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    }
+    .overview { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(290px, .92fr); gap: 18px; }
+    .main-reading { position: relative; overflow: hidden; padding: clamp(22px, 4vw, 34px); min-height: 265px; }
+    .main-reading::after { content: ''; position: absolute; width: 260px; height: 260px; right: -85px; bottom: -125px; border-radius: 50%; border: 1px solid rgba(65,231,255,.24); box-shadow: 0 0 0 28px rgba(65,231,255,.035), 0 0 0 58px rgba(65,231,255,.025); pointer-events: none; }
+    .mini-label { display: block; color: var(--muted); font-size: .81rem; font-weight: 700; letter-spacing: .095em; text-transform: uppercase; }
+    .reading-line { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px; margin: 13px 0 14px; position: relative; z-index: 1; }
+    .reading-value { font: 800 clamp(3.5rem, 8vw, 6.15rem)/.98 Rubik, sans-serif; letter-spacing: -.075em; }
+    .reading-unit { color: var(--accent); font: 700 1.08rem Rubik, sans-serif; }
+    .reading-sub { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: .9rem; }
+    .reading-sub .tiny-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 14px rgba(65,231,255,.75); }
+    .side-stack { display: grid; gap: 18px; }
+    .status-panel, .time-panel { padding: 24px; display: flex; flex-direction: column; justify-content: center; }
+    .status-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .station-name { font: 700 1.5rem Rubik, sans-serif; margin: 10px 0 7px; }
+    .status-pill { display: inline-flex; align-items: center; gap: 9px; border-radius: 999px; border: 1px solid var(--border); background: rgba(0,0,0,.16); padding: 8px 12px; font-size: .85rem; font-weight: 800; white-space: nowrap; }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--bad); flex: 0 0 auto; }
+    .status-pill.online .status-dot { background: var(--good); box-shadow: 0 0 0 0 rgba(74,240,163,.65); animation: pulse 1.7s infinite; }
+    .status-pill.offline .status-dot { background: #9699aa; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(74,240,163,.55); } 70% { box-shadow: 0 0 0 8px rgba(74,240,163,0); } 100% { box-shadow: 0 0 0 0 rgba(74,240,163,0); } }
+    .muted-copy { color: var(--muted); font-size: .88rem; line-height: 1.55; margin: 0; }
+    .time-value { margin: 10px 0 5px; font-weight: 700; font-size: 1.06rem; line-height: 1.5; overflow-wrap: anywhere; }
+    .updated-line { margin-top: 13px; font-size: .76rem; color: var(--faint); }
+    .section-head { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin: 42px 0 17px; }
+    .section-head h2 { margin: 8px 0 0; font: 700 clamp(1.5rem, 3.5vw, 2.15rem)/1.15 Rubik, sans-serif; letter-spacing: -.035em; }
+    .section-head p { color: var(--muted); margin: 7px 0 0; font-size: .9rem; line-height: 1.5; }
+    .builder { padding: clamp(18px, 3vw, 28px); }
+    .builder-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 17px; }
+    .field { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+    .field label, .field-title { color: rgba(255,255,255,.84); font-size: .84rem; font-weight: 700; }
+    input[type="datetime-local"] { width: 100%; min-width: 0; color: white; background: rgba(2,6,27,.52); border: 1px solid rgba(255,255,255,.17); border-radius: 12px; padding: 13px 12px; outline: none; }
+    input[type="datetime-local"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(65,231,255,.12); }
+    input[type="datetime-local"]::-webkit-calendar-picker-indicator { cursor: pointer; filter: invert(1); opacity: .8; }
+    .auto-row { display: flex; align-items: flex-start; gap: 12px; padding: 15px; border: 1px solid rgba(65,231,255,.24); background: rgba(65,231,255,.055); border-radius: 14px; margin-top: 18px; }
+    .auto-row input { width: 18px; height: 18px; flex: 0 0 auto; margin-top: 2px; accent-color: #44e6ff; cursor: pointer; }
+    .auto-row label { cursor: pointer; }
+    .auto-row strong { display: block; font-size: .9rem; margin-bottom: 4px; }
+    .auto-row small { display: block; color: var(--muted); font-size: .8rem; line-height: 1.55; }
+    .builder-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 20px; }
+    .btn { appearance: none; display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 44px; border: 1px solid rgba(255,255,255,.2); border-radius: 12px; padding: 11px 17px; background: rgba(255,255,255,.105); color: white; font-weight: 800; cursor: pointer; transition: transform .18s, background .18s, border-color .18s; }
+    .btn:hover { transform: translateY(-1px); background: rgba(255,255,255,.17); }
+    .btn.primary { color: #061a2c; border-color: transparent; background: linear-gradient(100deg, #53e8ff, #9c9aff); box-shadow: 0 8px 22px rgba(54,209,255,.15); }
+    .btn.primary:hover { background: linear-gradient(100deg, #8df1ff, #b4b1ff); }
+    .btn:disabled { opacity: .55; cursor: wait; transform: none; }
+    .builder-note { color: var(--muted); font-size: .8rem; line-height: 1.55; margin: 16px 0 0; }
+    .chart-panel { padding: clamp(15px, 3vw, 26px); margin-top: 18px; }
+    .chart-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 8px; }
+    .chart-top h3 { margin: 0 0 6px; font: 700 1.15rem Rubik, sans-serif; }
+    .chart-meta { color: var(--muted); font-size: .81rem; line-height: 1.5; }
+    .chart-wrap { height: clamp(280px, 42vw, 430px); position: relative; }
+    .chart-empty { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; color: var(--muted); padding: 24px; pointer-events: none; }
+    .chart-empty[hidden] { display: none; }
+    .chart-foot { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; color: var(--faint); font-size: .77rem; margin-top: 10px; }
+    .notice { padding: 13px 15px; border-radius: 12px; margin-top: 15px; font-size: .85rem; line-height: 1.55; display: none; overflow-wrap: anywhere; }
+    .notice.show { display: block; }
+    .notice.error { border: 1px solid rgba(255,142,142,.27); background: rgba(255,92,112,.09); color: #ffd8df; }
+    .notice.info { border: 1px solid rgba(65,231,255,.22); background: rgba(65,231,255,.06); color: #dcfaff; }
+    footer { display: flex; align-items: center; justify-content: space-between; gap: 15px; flex-wrap: wrap; border-top: 1px solid rgba(255,255,255,.13); margin-top: 34px; padding-top: 19px; color: var(--faint); font-size: .78rem; line-height: 1.6; }
+    footer .foot-brand { color: rgba(255,255,255,.76); font: 700 1rem Rubik, sans-serif; }
+    .loading-shimmer { animation: shimmer 1.4s ease-in-out infinite alternate; }
+    @keyframes shimmer { to { opacity: .45; } }
+    @media (max-width: 780px) {
+      .overview { grid-template-columns: 1fr; }
+      .side-stack { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .section-head { align-items: flex-start; flex-direction: column; }
+      .top-tag { display: none; }
+    }
+    @media (max-width: 540px) {
+      main { width: min(100% - 22px, 1160px); padding-top: 28px; }
+      .topbar { padding: 11px 14px; }
+      .brand-word { font-size: 1.35rem; }
+      .side-stack { grid-template-columns: 1fr; }
+      .builder-grid { grid-template-columns: 1fr; }
+      .reading-value { font-size: clamp(3.2rem, 17vw, 5rem); }
+      .main-reading { min-height: 230px; }
+      .status-panel, .time-panel { padding: 21px; }
+      .btn { width: 100%; }
+      .chart-top { flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Track.air início">
+      <span class="brand-word">Track<span>.</span>air</span>
+    </a>
+    <div class="top-tag">Rede Track.AI - Versão ALPHA</div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Protótipo sonda <span class="gradient-text">Track.AI</span></h1>
+      <p class="intro">Concentração de dióxido de carbono registrada pela estação. Consulte a última medição e gere gráficos para qualquer intervalo disponível no banco de dados.</p>
+    </section>
+
+    <section class="overview" aria-label="Resumo da estação">
+      <article class="panel main-reading">
+        <span class="mini-label">Concentração atual de CO₂</span>
+        <div class="reading-line">
+          <span class="reading-value" id="co2-value">—</span>
+          <span class="reading-unit">ppm</span>
+        </div>
+        <div class="reading-sub"><span class="tiny-dot"></span><span id="reading-caption">Aguardando dados da estação</span></div>
+        <div class="updated-line" id="last-server-update">Conectando à API…</div>
+      </article>
+
+      <div class="side-stack">
+        <article class="panel status-panel">
+          <div class="status-top">
+            <span class="mini-label">Sonda</span>
+            <span class="status-pill offline" id="status-pill"><span class="status-dot"></span><span id="status-text">Offline</span></span>
+          </div>
+          <div class="station-name" id="station-name">CWB-001</div>
+          <p class="muted-copy" id="status-detail">Aguardando a primeira resposta do servidor.</p>
+        </article>
+        <article class="panel time-panel">
+          <span class="mini-label">Última medição registrada</span>
+          <div class="time-value" id="last-measurement">Nenhuma medição encontrada</div>
+          <p class="muted-copy" id="last-measurement-relative">O horário aparecerá quando a API responder.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="graficos">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Explorar dados</div>
+          <h2>Construtor de gráficos</h2>
+          <p>Escolha uma janela de tempo para visualizar o histórico de CO₂.</p>
+        </div>
+      </div>
+
+      <div class="panel builder">
+        <div class="builder-grid">
+          <div class="field">
+            <label for="start-time">Início da janela</label>
+            <input id="start-time" type="datetime-local" step="1" disabled>
+          </div>
+          <div class="field">
+            <label for="end-time">Fim da janela</label>
+            <input id="end-time" type="datetime-local" step="1" disabled>
+          </div>
+        </div>
+        <div class="auto-row">
+          <input type="checkbox" id="auto-end">
+          <label for="auto-end">
+            <strong>Atualizar o instante final automaticamente</strong>
+            <small>O fim da janela avança a cada ciclo de atualização e o gráfico busca as novas medições, mantendo o início escolhido.</small>
+          </label>
+        </div>
+        <div class="builder-actions">
+          <button class="btn primary" id="generate-btn" type="button" disabled>Gerar gráfico <span aria-hidden="true">↗</span></button>
+          <button class="btn" id="reset-btn" type="button" disabled>Usar todo o período</button>
+        </div>
+        <p class="builder-note" id="range-note">Consultando o período disponível no banco…</p>
+        <div class="notice error" id="error-notice" role="status"></div>
+        <div class="notice info" id="info-notice" role="status"></div>
+      </div>
+
+      <div class="panel chart-panel">
+        <div class="chart-top">
+          <div>
+            <h3>Histórico de CO₂</h3>
+            <div class="chart-meta" id="chart-subtitle">Selecione um período e gere o gráfico.</div>
+          </div>
+          <span class="status-pill"><span class="status-dot" style="background:var(--accent);box-shadow:0 0 12px rgba(65,231,255,.55)"></span><span id="point-count">0 pontos</span></span>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="co2-chart" aria-label="Gráfico do histórico de CO₂ em ppm" role="img"></canvas>
+          <div class="chart-empty" id="chart-empty">As medições do período selecionado aparecerão aqui.</div>
+        </div>
+        <div class="chart-foot"><span id="chart-range-label">Nenhum intervalo carregado</span><span>Fonte: banco de dados Track.air</span></div>
+      </div>
+    </section>
+
+    <footer>
+      <span class="foot-brand">Track.air <span style="color:var(--accent)">/</span> CWB</span>
+      <span>Os dados são atualizados a partir das medições recebidas pelo servidor. Status online indica uma medição recente, não um diagnóstico da qualidade do ar.</span>
+    </footer>
+  </main>
+
+  <script>
+    // ==========================================================
+    // CONFIGURAÇÃO: troque pelo endereço REAL do seu Worker.
+    // Não inclua /api/latest ou /api/history nesta URL base.
+    // ==========================================================
+    const API_BASE_URL = "https://trackai-proto1.davimquerino2009.workers.dev";
+    const DISPLAY_STATION_ID = "CWB-001";
+    const POLL_INTERVAL_MS = 15000;
+    const ONLINE_THRESHOLD_MS = 60000;
+    const PAGE_SIZE = 5000;
+    const MAX_RECORDS_TO_LOAD = 100000;
+    const MAX_CHART_POINTS = 2500;
+
+    const el = (id) => document.getElementById(id);
+    const startInput = el("start-time");
+    const endInput = el("end-time");
+    const autoEnd = el("auto-end");
+    const generateBtn = el("generate-btn");
+    const resetBtn = el("reset-btn");
+    const errorNotice = el("error-notice");
+    const infoNotice = el("info-notice");
+
+    let metadata = null;
+    let chart = null;
+    let chartHasRun = false;
+    let chartBusy = false;
+    let pollBusy = false;
+    let allRowsForLastRange = [];
+
+    el("station-name").textContent = DISPLAY_STATION_ID;
+
+    function apiUrl(path) {
+      return API_BASE_URL.replace(/\/+$/, "") + path;
+    }
+
+    function assertConfigured() {
+      if (!API_BASE_URL.startsWith("https://") || API_BASE_URL.includes("SEU-SUBDOMINIO")) {
+        throw new Error("Configure API_BASE_URL no início do script com a URL real do seu Cloudflare Worker.");
+      }
+    }
+
+    async function fetchJSON(path) {
+      assertConfigured();
+      const response = await fetch(apiUrl(path), { cache: "no-store", headers: { "Accept": "application/json" } });
+      const body = await response.text();
+      let json;
+      try { json = JSON.parse(body); }
+      catch { throw new Error(`A API respondeu HTTP ${response.status}, mas não retornou JSON válido.`); }
+      if (!response.ok) throw new Error(json.error || `Erro HTTP ${response.status}`);
+      return json;
+    }
+
+    function showNotice(target, message) {
+      target.textContent = message;
+      target.classList.add("show");
+    }
+    function hideNotice(target) { target.textContent = ""; target.classList.remove("show"); }
+
+    function localInputValue(date) {
+      const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+      return local.toISOString().slice(0, 19);
+    }
+
+    function inputToISO(input) {
+      if (!input.value) return null;
+      const date = new Date(input.value);
+      return Number.isNaN(date.getTime()) ? null : date.toISOString();
+    }
+
+    function parseDate(value) {
+      if (!value) return null;
+      const d = new Date(value);
+      return Number.isNaN(d.getTime()) ? null : d;
+    }
+
+    function formatDate(value, includeSeconds = false) {
+      const date = parseDate(value);
+      if (!date) return "Horário indisponível";
+      return date.toLocaleString("pt-BR", {
+        day: "2-digit", month: "2-digit", year: "numeric",
+        hour: "2-digit", minute: "2-digit", ...(includeSeconds ? { second: "2-digit" } : {})
+      });
+    }
+
+    function relativeTime(value) {
+      const date = parseDate(value);
+      if (!date) return "Horário indisponível";
+      const seconds = Math.max(0, Math.floor((Date.now() - date.getTime()) / 1000));
+      if (seconds < 5) return "há poucos segundos";
+      if (seconds < 60) return `há ${seconds} s`;
+      const minutes = Math.floor(seconds / 60);
+      if (minutes < 60) return `há ${minutes} min`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `há ${hours} h`;
+      return `há ${Math.floor(hours / 24)} d`;
+    }
+
+    function setStatus(online, detail) {
+      const pill = el("status-pill");
+      pill.classList.toggle("online", online);
+      pill.classList.toggle("offline", !online);
+      el("status-text").textContent = online ? "Online" : "Offline";
+      el("status-detail").textContent = detail;
+    }
+
+    function showLatest(row) {
+      if (!row) {
+        el("co2-value").textContent = "—";
+        el("reading-caption").textContent = "Nenhuma medição disponível";
+        el("last-measurement").textContent = "Nenhuma medição encontrada";
+        el("last-measurement-relative").textContent = "A API ainda não tem registros para exibir.";
+        el("last-server-update").textContent = "Última consulta: " + formatDate(new Date().toISOString(), true);
+        setStatus(false, "Nenhuma medição encontrada no banco de dados.");
+        return;
+      }
+
+      const ppm = Number(row.co2_ppm ?? row.co2);
+      el("co2-value").textContent = Number.isFinite(ppm) ? Math.round(ppm).toLocaleString("pt-BR") : "—";
+      el("reading-caption").textContent = "Último valor registrado pelo sensor";
+
+      const measuredAt = row.measured_at || row.received_at;
+      const receivedAt = row.received_at || measuredAt;
+      el("last-measurement").textContent = formatDate(measuredAt, true);
+      el("last-measurement-relative").textContent = `${relativeTime(receivedAt)} · recebido pelo servidor ${formatDate(receivedAt, true)}`;
+      el("last-server-update").textContent = `Última consulta à API: ${formatDate(new Date().toISOString(), true)}`;
+
+      const receivedDate = parseDate(receivedAt);
+      const ageMs = receivedDate ? Date.now() - receivedDate.getTime() : Infinity;
+      const online = ageMs >= -30000 && ageMs <= ONLINE_THRESHOLD_MS;
+      setStatus(online, online
+        ? `Medição recebida ${relativeTime(receivedAt)}.`
+        : `Último registro recebido ${relativeTime(receivedAt)}. Limite online: ${Math.round(ONLINE_THRESHOLD_MS / 1000)} s.`);
+    }
+
+    async function refreshLatest() {
+      try {
+        const result = await fetchJSON("/api/latest");
+        showLatest(result.data || null);
+        hideNotice(errorNotice);
+      } catch (error) {
+        setStatus(false, "Não foi possível consultar a API.");
+        el("last-server-update").textContent = "Falha na última consulta à API.";
+        showNotice(errorNotice, `Falha ao consultar a última medição: ${error.message}`);
+      }
+    }
+
+    async function loadMetadata() {
+      const result = await fetchJSON("/api/stats");
+      const count = Number(result.count ?? result.measurement_count ?? 0);
+      const oldest = result.oldest_at || result.oldest || result.min_measured_at || null;
+      const newest = result.newest_at || result.newest || result.max_measured_at || null;
+      if (count > 0 && !oldest) throw new Error("A rota /api/stats não retornou oldest_at.");
+      metadata = { count, oldestAt: oldest, newestAt: newest };
+
+      const now = new Date();
+      const oldestDate = parseDate(oldest) || now;
+      const minimum = localInputValue(oldestDate);
+      const maximum = localInputValue(now);
+      startInput.min = minimum;
+      endInput.min = minimum;
+      startInput.max = maximum;
+      endInput.max = maximum;
+
+      if (!startInput.value || !chartHasRun) startInput.value = minimum;
+      if (!endInput.value || !chartHasRun || autoEnd.checked) endInput.value = maximum;
+
+      startInput.disabled = count === 0;
+      endInput.disabled = count === 0 || autoEnd.checked;
+      generateBtn.disabled = count === 0;
+      resetBtn.disabled = count === 0;
+      el("range-note").textContent = count > 0
+        ? `${count.toLocaleString("pt-BR")} medições no banco. Período disponível: ${formatDate(oldest)} até agora.`
+        : "Ainda não há medições no banco de dados.";
+
+      if (count === 0) {
+        showNotice(infoNotice, "Quando a primeira medição for salva no banco, os controles de intervalo serão habilitados.");
+      } else {
+        hideNotice(infoNotice);
+      }
+    }
+
+    async function fetchHistoryRange(fromISO, toISO) {
+      const rows = [];
+      let offset = 0;
+      let capped = false;
+
+      while (true) {
+        const query = new URLSearchParams({ from: fromISO, to: toISO, limit: String(PAGE_SIZE), offset: String(offset) });
+        const result = await fetchJSON(`/api/history?${query.toString()}`);
+        const batch = Array.isArray(result.data) ? result.data : [];
+        rows.push(...batch);
+        offset += batch.length;
+        if (batch.length < PAGE_SIZE) break;
+        if (rows.length >= MAX_RECORDS_TO_LOAD) { capped = true; break; }
+      }
+
+      rows.sort((a, b) => new Date(a.measured_at).getTime() - new Date(b.measured_at).getTime());
+      return { rows, capped };
+    }
+
+    function downsampleEvenly(rows, maxPoints) {
+      if (rows.length <= maxPoints) return rows;
+      const output = [];
+      const step = (rows.length - 1) / (maxPoints - 1);
+      for (let i = 0; i < maxPoints; i++) output.push(rows[Math.round(i * step)]);
+      return output;
+    }
+
+    function makeChart() {
+      const ctx = el("co2-chart").getContext("2d");
+      const fill = ctx.createLinearGradient(0, 0, 0, 390);
+      fill.addColorStop(0, "rgba(65,231,255,.27)");
+      fill.addColorStop(1, "rgba(65,231,255,0)");
+
+      chart = new Chart(ctx, {
+        type: "line",
+        data: { labels: [], datasets: [{
+          label: "CO₂ (ppm)", data: [], borderColor: "#55e8ff", backgroundColor: fill,
+          borderWidth: 2.5, fill: true, tension: .22, pointRadius: 0, pointHoverRadius: 5,
+          pointHoverBackgroundColor: "#fff", pointHoverBorderColor: "#55e8ff", pointHoverBorderWidth: 2
+        }] },
+        options: {
+          responsive: true, maintainAspectRatio: false, animation: false,
+          interaction: { intersect: false, mode: "index" },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: "rgba(8,10,38,.94)", borderColor: "rgba(255,255,255,.18)", borderWidth: 1,
+              titleColor: "#9aeeff", bodyColor: "#fff", padding: 12,
+              callbacks: { label: (context) => ` ${Number(context.parsed.y).toLocaleString("pt-BR")} ppm` }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: "rgba(255,255,255,.075)" },
+              ticks: { color: "rgba(255,255,255,.62)", maxTicksLimit: 7, maxRotation: 0, autoSkip: true, font: { family: "Inter", size: 10 }, callback: function(value) {
+                const raw = this.getLabelForValue(value);
+                const date = new Date(raw);
+                return Number.isNaN(date.getTime()) ? raw : date.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+              } }
+            },
+            y: {
+              grid: { color: "rgba(255,255,255,.075)" },
+              ticks: { color: "rgba(255,255,255,.62)", font: { family: "Inter", size: 11 }, callback: (value) => `${Number(value).toLocaleString("pt-BR")} ppm` },
+              title: { display: true, text: "CO₂ (ppm)", color: "rgba(255,255,255,.6)", font: { family: "Inter", weight: "600" } }
+            }
+          }
+        }
+      });
+    }
+
+    async function generateChart({ automatic = false } = {}) {
+      if (chartBusy || !metadata || metadata.count === 0) return;
+      const fromISO = inputToISO(startInput);
+      const toISO = autoEnd.checked || automatic ? new Date().toISOString() : inputToISO(endInput);
+
+      if (!fromISO || !toISO) {
+        showNotice(errorNotice, "Escolha as datas inicial e final.");
+        return;
+      }
+      if (new Date(fromISO) > new Date(toISO)) {
+        showNotice(errorNotice, "O início da janela precisa ser anterior ao fim.");
+        return;
+      }
+      if (new Date(fromISO) < new Date(metadata.oldestAt)) {
+        showNotice(errorNotice, "O início não pode ser anterior à medição mais antiga do banco.");
+        return;
+      }
+      if (new Date(toISO) > new Date()) {
+        showNotice(errorNotice, "O fim da janela não pode ultrapassar o instante atual.");
+        return;
+      }
+
+      chartBusy = true;
+      generateBtn.disabled = true;
+      generateBtn.textContent = "Carregando dados…";
+      hideNotice(errorNotice);
+      hideNotice(infoNotice);
+      try {
+        const { rows, capped } = await fetchHistoryRange(fromISO, toISO);
+        allRowsForLastRange = rows;
+        const plotted = downsampleEvenly(rows, MAX_CHART_POINTS);
+        if (!chart) makeChart();
+        chart.data.labels = plotted.map(row => row.measured_at);
+        chart.data.datasets[0].data = plotted.map(row => Number(row.co2_ppm));
+        chart.update("none");
+        chartHasRun = true;
+
+        el("point-count").textContent = `${rows.length.toLocaleString("pt-BR")} ${rows.length === 1 ? "ponto" : "pontos"}`;
+        el("chart-subtitle").textContent = rows.length
+          ? `${formatDate(fromISO)} — ${formatDate(toISO)}`
+          : "Nenhuma medição encontrada nessa janela.";
+        el("chart-range-label").textContent = rows.length
+          ? `${formatDate(rows[0].measured_at)} → ${formatDate(rows[rows.length - 1].measured_at)}`
+          : "Sem dados no intervalo selecionado";
+        el("chart-empty").hidden = rows.length > 0;
+
+        if (autoEnd.checked) endInput.value = localInputValue(new Date());
+        if (plotted.length < rows.length) {
+          showNotice(infoNotice, `O banco retornou ${rows.length.toLocaleString("pt-BR")} medições; o gráfico desenha uma amostra de ${plotted.length.toLocaleString("pt-BR")} pontos para permanecer fluido.`);
+        }
+        if (capped) {
+          showNotice(infoNotice, `O intervalo contém um volume grande de dados. Foram carregados os primeiros ${MAX_RECORDS_TO_LOAD.toLocaleString("pt-BR")} registros do intervalo; reduza a janela para consultar um período menor.`);
+        }
+      } catch (error) {
+        showNotice(errorNotice, `Não foi possível gerar o gráfico: ${error.message}`);
+        if (String(error.message).includes("404") || String(error.message).includes("stats")) {
+          showNotice(infoNotice, "A página precisa das rotas GET /api/stats e dos parâmetros from, to e offset em /api/history. Veja as instruções que acompanham o HTML para atualizar o Worker.");
+        }
+      } finally {
+        chartBusy = false;
+        generateBtn.disabled = !metadata || metadata.count === 0;
+        generateBtn.innerHTML = 'Gerar gráfico <span aria-hidden="true">↗</span>';
+      }
+    }
+
+    function updateDateMaximum() {
+      const nowValue = localInputValue(new Date());
+      startInput.max = nowValue;
+      endInput.max = nowValue;
+    }
+
+    async function refreshPageData() {
+      if (pollBusy) return;
+      pollBusy = true;
+      try {
+        await refreshLatest();
+        await loadMetadata();
+        if (autoEnd.checked && chartHasRun && !chartBusy) {
+          endInput.value = localInputValue(new Date());
+          await generateChart({ automatic: true });
+        }
+      } catch (error) {
+        showNotice(errorNotice, `Não foi possível carregar as informações do banco: ${error.message}`);
+        if (String(error.message).includes("404") || String(error.message).includes("stats")) {
+          showNotice(infoNotice, "O Worker atual ainda precisa da rota GET /api/stats e da consulta de histórico por intervalo. A API /api/latest continua sendo consultada separadamente.");
+        }
+      } finally {
+        pollBusy = false;
+      }
+    }
+
+    generateBtn.addEventListener("click", () => generateChart());
+    resetBtn.addEventListener("click", async () => {
+      if (!metadata?.oldestAt) return;
+      startInput.value = localInputValue(new Date(metadata.oldestAt));
+      endInput.value = localInputValue(new Date());
+      await generateChart();
+    });
+    autoEnd.addEventListener("change", async () => {
+      endInput.disabled = autoEnd.checked || !metadata || metadata.count === 0;
+      if (autoEnd.checked) {
+        endInput.value = localInputValue(new Date());
+        if (chartHasRun) await generateChart({ automatic: true });
+      }
+    });
+    startInput.addEventListener("change", () => {
+      if (startInput.value && endInput.value && startInput.value > endInput.value && !autoEnd.checked) {
+        endInput.value = startInput.value;
+      }
+    });
+
+    async function init() {
+      await refreshLatest();
+      try {
+        await loadMetadata();
+        if (metadata?.count > 0) await generateChart();
+      } catch (error) {
+        showNotice(errorNotice, `Configuração da API incompleta: ${error.message}`);
+        showNotice(infoNotice, "Além de /api/latest e /api/history, este painel precisa de /api/stats e do filtro de intervalo no histórico. Consulte as instruções de configuração junto com este arquivo.");
+      }
+      // Cartão de status atualiza mesmo se o gráfico não estiver sendo usado.
+      setInterval(async () => {
+        updateDateMaximum();
+        await refreshLatest();
+        try {
+          await loadMetadata();
+          if (autoEnd.checked && chartHasRun && !chartBusy) {
+            endInput.value = localInputValue(new Date());
+            await generateChart({ automatic: true });
+          }
+        } catch (error) {
+          showNotice(errorNotice, `Falha ao atualizar os metadados: ${error.message}`);
+        }
+      }, POLL_INTERVAL_MS);
+    }
+
+    init();
+  </script>
+</body>
+</html>

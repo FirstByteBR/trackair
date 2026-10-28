@@ -110,6 +110,28 @@
     .auto-row strong { display: block; font-size: .9rem; margin-bottom: 4px; }
     .auto-row small { display: block; color: var(--muted); font-size: .8rem; line-height: 1.55; }
     .builder-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 20px; }
+
+    /* ===== PRESETS RÁPIDOS (visual) ===== */
+    .preset-block { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+    .preset-row { display: flex; flex-wrap: wrap; gap: 9px; }
+    .preset-btn {
+      appearance: none; display: inline-flex; align-items: center; justify-content: center;
+      border: 1px solid rgba(255,255,255,.18); border-radius: 999px;
+      background: rgba(255,255,255,.06); color: rgba(255,255,255,.82);
+      padding: 9px 15px; font-size: .84rem; font-weight: 700; white-space: nowrap; cursor: pointer;
+      transition: background .18s, border-color .18s, color .18s, transform .18s, box-shadow .18s;
+    }
+    .preset-btn:hover:not(:disabled) { background: rgba(255,255,255,.14); transform: translateY(-1px); }
+    .preset-btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+    .preset-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .preset-btn.active {
+      color: #061a2c; border-color: transparent;
+      background: linear-gradient(100deg, #53e8ff, #9c9aff);
+      box-shadow: 0 6px 20px rgba(54,209,255,.3);
+    }
+    .preset-hint { margin: 0; color: var(--faint); font-size: .76rem; line-height: 1.5; }
+    /* ===== FIM PRESETS RÁPIDOS (visual) ===== */
+
     .btn { appearance: none; display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 44px; border: 1px solid rgba(255,255,255,.2); border-radius: 12px; padding: 11px 17px; background: rgba(255,255,255,.105); color: white; font-weight: 800; cursor: pointer; transition: transform .18s, background .18s, border-color .18s; }
     .btn:hover { transform: translateY(-1px); background: rgba(255,255,255,.17); }
     .btn.primary { color: #061a2c; border-color: transparent; background: linear-gradient(100deg, #53e8ff, #9c9aff); box-shadow: 0 8px 22px rgba(54,209,255,.15); }
@@ -217,8 +239,33 @@
             <input id="end-time" type="datetime-local" step="1" disabled>
           </div>
         </div>
+
+        <!-- ===== PRESETS RÁPIDOS (botões) ===== -->
+        <div class="preset-block">
+          <span class="field-title">Períodos rápidos</span>
+          <div class="preset-row" role="group" aria-label="Selecionar período rapidamente">
+            <button class="preset-btn" type="button" data-preset="5" aria-pressed="false">Últimos 5 min</button>
+            <button class="preset-btn" type="button" data-preset="15" aria-pressed="false">Últimos 15 min</button>
+            <button class="preset-btn" type="button" data-preset="30" aria-pressed="false">Últimos 30 min</button>
+            <button class="preset-btn" type="button" data-preset="60" aria-pressed="false">Última 1 h</button>
+
+            <!-- ============================================================
+                 PRESET TEMPORÁRIO — "DESDE 28/10/2026 ÀS 09H"
+                 Para remover depois, apague:
+                   1) este <button id="preset-launch"> (e os comentários ao redor);
+                   2) a constante LAUNCH_PRESET_START no JavaScript;
+                   3) o bloco marcado dentro da função applyPreset() e da init().
+                 ============================================================ -->
+            <button class="preset-btn" type="button" data-preset="launch" id="preset-launch" aria-pressed="false">Desde 28/10/2026 · 09h</button>
+            <!-- ===== FIM DO PRESET TEMPORÁRIO ===== -->
+
+          </div>
+          <p class="preset-hint">O botão fixa o início da janela. Com a atualização automática ligada, o fim avança a cada 15 s.</p>
+        </div>
+        <!-- ===== FIM PRESETS RÁPIDOS (botões) ===== -->
+
         <div class="auto-row">
-          <input type="checkbox" id="auto-end">
+          <input type="checkbox" id="auto-end" checked>
           <label for="auto-end">
             <strong>Atualizar o instante final automaticamente</strong>
             <small>O fim da janela avança a cada ciclo de atualização e o gráfico busca as novas medições, mantendo o início escolhido.</small>
@@ -276,6 +323,7 @@
     const resetBtn = el("reset-btn");
     const errorNotice = el("error-notice");
     const infoNotice = el("info-notice");
+    const presetButtons = [...document.querySelectorAll(".preset-btn")];
 
     let metadata = null;
     let chart = null;
@@ -283,6 +331,16 @@
     let chartBusy = false;
     let pollBusy = false;
     let allRowsForLastRange = [];
+    let activePreset = null;
+
+    // ============================================================
+    // PRESET TEMPORÁRIO — "DESDE 28/10/2026 ÀS 09H"
+    // Para remover: apague esta constante, o botão #preset-launch no
+    // HTML, o bloco marcado dentro de applyPreset() e o bloco marcado
+    // dentro de init().
+    // ============================================================
+    const LAUNCH_PRESET_START = "2026-10-28T09:00:00";
+    // ===== FIM DO TRECHO TEMPORÁRIO =====
 
     el("station-name").textContent = DISPLAY_STATION_ID;
 
@@ -425,6 +483,9 @@
       endInput.disabled = count === 0 || autoEnd.checked;
       generateBtn.disabled = count === 0;
       resetBtn.disabled = count === 0;
+      presetButtons.forEach(btn => { btn.disabled = count === 0; });
+      if (count === 0) clearActivePreset();
+
       el("range-note").textContent = count > 0
         ? `${count.toLocaleString("pt-BR")} medições no banco. Período disponível: ${formatDate(oldest)} até agora.`
         : "Ainda não há medições no banco de dados.";
@@ -571,6 +632,70 @@
       }
     }
 
+    // ==========================================================
+    // PRESETS RÁPIDOS — lógica
+    // ==========================================================
+
+    function setActivePreset(key) {
+      activePreset = key;
+      presetButtons.forEach(btn => {
+        const on = btn.dataset.preset === key;
+        btn.classList.toggle("active", on);
+        btn.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+    }
+
+    function clearActivePreset() {
+      if (activePreset === null) return;
+      activePreset = null;
+      presetButtons.forEach(btn => {
+        btn.classList.remove("active");
+        btn.setAttribute("aria-pressed", "false");
+      });
+    }
+
+    async function applyPreset(key) {
+      if (chartBusy || !metadata || metadata.count === 0) return;
+
+      const now = new Date();
+      let start;
+
+      if (key === "launch") {
+        // ======================================================
+        // PRESET TEMPORÁRIO — início fixo em 28/10/2026 às 09h.
+        // Remova este bloco junto com o botão #preset-launch, a
+        // constante LAUNCH_PRESET_START e o bloco correspondente
+        // dentro de init().
+        // ======================================================
+        start = new Date(LAUNCH_PRESET_START);
+        // ===== FIM DO TRECHO TEMPORÁRIO =====
+      } else {
+        start = new Date(now.getTime() - Number(key) * 60000);
+      }
+
+      let clampedToOldest = false;
+      const oldest = parseDate(metadata.oldestAt);
+      if (oldest && start < oldest) { start = oldest; clampedToOldest = true; }
+      if (start > now) start = now;
+
+      startInput.value = localInputValue(start);
+      endInput.value = localInputValue(now);
+      setActivePreset(key);
+
+      await generateChart();
+
+      if (clampedToOldest) {
+        showNotice(infoNotice, `O banco só tem medições a partir de ${formatDate(metadata.oldestAt)}; o início da janela foi ajustado para essa data.`);
+      }
+    }
+
+    presetButtons.forEach(btn => {
+      btn.addEventListener("click", () => { applyPreset(btn.dataset.preset); });
+    });
+    // ==========================================================
+    // FIM PRESETS RÁPIDOS — lógica
+    // ==========================================================
+
     function updateDateMaximum() {
       const nowValue = localInputValue(new Date());
       startInput.max = nowValue;
@@ -600,6 +725,7 @@
     generateBtn.addEventListener("click", () => generateChart());
     resetBtn.addEventListener("click", async () => {
       if (!metadata?.oldestAt) return;
+      clearActivePreset();
       startInput.value = localInputValue(new Date(metadata.oldestAt));
       endInput.value = localInputValue(new Date());
       await generateChart();
@@ -612,16 +738,34 @@
       }
     });
     startInput.addEventListener("change", () => {
+      clearActivePreset();
       if (startInput.value && endInput.value && startInput.value > endInput.value && !autoEnd.checked) {
         endInput.value = startInput.value;
       }
+    });
+    endInput.addEventListener("change", () => {
+      clearActivePreset();
     });
 
     async function init() {
       await refreshLatest();
       try {
         await loadMetadata();
-        if (metadata?.count > 0) await generateChart();
+        if (metadata?.count > 0) {
+          // ============================================================
+          // AUTO-SELEÇÃO DO PRESET "DESDE 28/10/2026 · 09h"
+          // Se a data do preset ainda estiver no futuro, cai para o
+          // período completo para não exibir um gráfico vazio.
+          // ============================================================
+          const launchDate = new Date(LAUNCH_PRESET_START);
+          if (launchDate <= new Date()) {
+            await applyPreset("launch");
+          } else {
+            showNotice(infoNotice, `O período "Desde 28/10/2026 · 09h" ainda não começou (agora são ${formatDate(new Date(), true)}). Exibindo o período completo; use os botões de período rápido quando quiser.`);
+            await generateChart();
+          }
+          // ===== FIM DO TRECHO TEMPORÁRIO =====
+        }
       } catch (error) {
         showNotice(errorNotice, `Configuração da API incompleta: ${error.message}`);
         showNotice(infoNotice, "Além de /api/latest e /api/history, este painel precisa de /api/stats e do filtro de intervalo no histórico. Consulte as instruções de configuração junto com este arquivo.");
